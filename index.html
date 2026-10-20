@@ -9,9 +9,9 @@
   <title>PPL Minimal Tracker</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; padding: 14px; padding-bottom: 95px; }
+    body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro: Doble de tamaño */
+    /* Barra superior del cronómetro: Números gigantes */
     #timer-banner {
       display: none;
       position: sticky;
@@ -19,36 +19,33 @@
       z-index: 200;
       background: #0284c7;
       color: #fff;
-      padding: 16px 18px;
+      padding: 12px 16px;
       border-radius: 14px;
-      margin-bottom: 16px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      margin-bottom: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.55);
       align-items: center;
       justify-content: space-between;
     }
-    .timer-info { display: flex; align-items: baseline; gap: 10px; }
-    .timer-label { font-size: 0.95rem; text-transform: uppercase; font-weight: 700; opacity: 0.9; }
+    .timer-info { display: flex; align-items: baseline; gap: 8px; }
     #timer-display { 
-      font-size: 2.6rem; 
+      font-size: 3.8rem; 
       font-weight: 900; 
       font-variant-numeric: tabular-nums; 
-      letter-spacing: 0.04em;
-      line-height: 1;
+      letter-spacing: 0.02em;
+      line-height: 0.95;
     }
-    .timer-controls { display: flex; gap: 8px; }
+    .timer-controls { display: flex; gap: 8px; align-items: center; }
     .timer-btn {
-      background: rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.25);
       border: 1px solid rgba(255,255,255,0.5);
       color: #fff;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       cursor: pointer;
     }
-    .timer-btn:active { background: rgba(255,255,255,0.4); }
-
-    h1 { font-size: 1.15rem; text-align: center; margin-bottom: 12px; color: #38bdf8; letter-spacing: 0.05em; text-transform: uppercase; }
+    .timer-btn:active { background: rgba(255,255,255,0.45); }
 
     /* Menú Desplegable de Rutinas */
     .nav-select-wrapper { margin-bottom: 10px; }
@@ -60,10 +57,10 @@
       color: #38bdf8;
       border-radius: 10px;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 1.05rem;
       cursor: pointer;
       text-align-last: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
     .nav-select:focus { border-color: #38bdf8; outline: none; }
 
@@ -73,7 +70,7 @@
       border: 1px solid #1e3a8a;
       border-radius: 10px;
       padding: 10px 12px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       font-size: 0.82rem;
     }
     .history-card summary {
@@ -153,10 +150,9 @@
 </head>
 <body>
 
-  <!-- Cronómetro Flotante Ampliado al Doble -->
+  <!-- Cronómetro Flotante con Dígitos Extra Grandes -->
   <div id="timer-banner">
     <div class="timer-info">
-      <span class="timer-label">Descanso</span>
       <span id="timer-display">00:00</span>
     </div>
     <div class="timer-controls">
@@ -165,9 +161,7 @@
     </div>
   </div>
 
-  <h1>PPL Minimal Tracker</h1>
-
-  <!-- Selector Desplegable de Rutinas -->
+  <!-- Selector Desplegable de Rutinas (Arriba del todo, sin título intermedio) -->
   <div class="nav-select-wrapper">
     <select class="nav-select" id="routine-selector" onchange="loadRoutine(this.value)">
       <option value="push">Día 1: Push (Empuje)</option>
@@ -257,7 +251,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           clearInterval(timerInterval);
           timerRemaining = 0;
           renderTimer();
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
         } else {
           renderTimer();
         }
