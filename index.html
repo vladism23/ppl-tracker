@@ -9,23 +9,23 @@
   <title>PPL Minimal Tracker</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; padding: 16px; padding-bottom: 80px; }
-    h1 { font-size: 1.25rem; text-align: center; margin-bottom: 16px; color: #38bdf8; letter-spacing: 0.05em; }
+    body { background-color: #0f172a; color: #f8fafc; padding: 16px; padding-bottom: 90px; }
+    h1 { font-size: 1.2rem; text-align: center; margin-bottom: 14px; color: #38bdf8; letter-spacing: 0.05em; text-transform: uppercase; }
     
     .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .tab-btn { flex: 1; padding: 10px; background: #1e293b; border: 1px solid #334155; color: #94a3b8; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .tab-btn.active { background: #2563eb; color: #fff; border-color: #3b82f6; }
 
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-    .exercise-title { font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 10px; }
+    .exercise-title { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; margin-bottom: 10px; }
     
-    .set-row { display: grid; grid-template-columns: 35px 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
-    .set-label { font-size: 0.85rem; color: #94a3b8; font-weight: bold; text-align: center; }
-    input { background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 8px; text-align: center; font-size: 1rem; }
+    .set-row { display: grid; grid-template-columns: 42px 1fr 1fr 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .set-label { font-size: 0.8rem; color: #94a3b8; font-weight: bold; text-align: center; }
+    input { background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 8px 4px; text-align: center; font-size: 0.95rem; width: 100%; }
     input:focus { border-color: #38bdf8; outline: none; }
 
-    .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #334155; padding: 12px 16px; display: flex; gap: 8px; }
-    .btn-send { flex: 2; background: #10b981; color: #042f2e; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; padding: 12px; cursor: pointer; }
+    .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #334155; padding: 12px 16px; display: flex; gap: 8px; z-index: 100; }
+    .btn-send { flex: 2; background: #10b981; color: #042f2e; border: none; border-radius: 8px; font-weight: bold; font-size: 0.95rem; padding: 12px; cursor: pointer; }
     .btn-config { flex: 1; background: #334155; color: #f8fafc; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
 
     #response-box { display: none; background: #022c22; border: 1px solid #059669; border-radius: 12px; padding: 14px; margin-top: 16px; font-size: 0.9rem; line-height: 1.5; color: #ecfdf5; white-space: pre-wrap; }
@@ -34,12 +34,12 @@
 </head>
 <body>
 
-  <h1>PPL TRACKER</h1>
+  <h1>PPL Tracker</h1>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="loadRoutine('push')">Push</button>
-    <button class="tab-btn" onclick="loadRoutine('pull')">Pull</button>
-    <button class="tab-btn" onclick="loadRoutine('legs')">Legs</button>
+    <button class="tab-btn active" onclick="loadRoutine('push', this)">Push</button>
+    <button class="tab-btn" onclick="loadRoutine('pull', this)">Pull</button>
+    <button class="tab-btn" onclick="loadRoutine('legs', this)">Legs</button>
   </div>
 
   <div id="exercise-list"></div>
@@ -54,49 +54,51 @@
   <script>
     const routines = {
       push: [
-        "Press banca en guiada",
-        "Press militar en guiada",
-        "Extensiones Katana en polea",
-        "Cruces en polea",
-        "Elevaciones laterales en banco",
-        "Extensiones tríceps en polea"
+        { name: "Press banca en guiada", sets: 3 },
+        { name: "Press militar en guiada", sets: 3 },
+        { name: "Extensiones Katana en polea", sets: 3 },
+        { name: "Cruces en polea", sets: 3 },
+        { name: "Elevaciones laterales en banco inclinado", sets: 3 },
+        { name: "Extensiones tríceps en polea", sets: 3 }
       ],
       pull: [
-        "Dominadas lastradas",
-        "Remo en T con soporte",
-        "Rear delt polea unilateral",
-        "Remo en multipower",
-        "Curl predicador barra Z",
-        "Curl Bayesian en polea"
+        { name: "Dominadas lastradas", sets: 3 },
+        { name: "Remo en T con soporte", sets: 3 },
+        { name: "Rear delt polea unilateral", sets: 3 },
+        { name: "Remo en multipower", sets: 3 },
+        { name: "Curl predicador barra Z", sets: 3 },
+        { name: "Curl Bayesian en polea", sets: 3 }
       ],
       legs: [
-        "Sentadilla en guiada",
-        "Peso muerto rumano en guiada",
-        "Extensión de cuádriceps",
-        "Curl femoral en máquina",
-        "Máquina de aductores",
-        "Gemelos sentado en guiada"
+        { name: "Sentadilla en guiada", sets: 3 },
+        { name: "Peso muerto rumano en guiada", sets: 3 },
+        { name: "Extensión de cuádriceps", sets: 3 },
+        { name: "Curl femoral en máquina", sets: 3 },
+        { name: "Máquina de aductores", sets: 3 },
+        { name: "Gemelos guiada (S1-S2 Estiramiento / S3-S4 Full)", sets: 4 }
       ]
     };
 
     let currentRoutine = 'push';
 
-    function loadRoutine(type) {
+    function loadRoutine(type, btnElement) {
       currentRoutine = type;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btnElement) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
 
       const container = document.getElementById('exercise-list');
       container.innerHTML = '';
       document.getElementById('response-box').style.display = 'none';
 
-      routines[type].forEach((name, exIdx) => {
-        const numSets = (name.includes("Gemelos")) ? 4 : 3;
+      routines[type].forEach((ex, exIdx) => {
         let setsHtml = '';
-        for (let s = 1; s <= numSets; s++) {
+        for (let s = 1; s <= ex.sets; s++) {
+          const label = (ex.name.includes("Gemelos") && s <= 2) ? `S${s}E` : `S${s}`;
           setsHtml += `
             <div class="set-row">
-              <span class="set-label">S${s}</span>
+              <span class="set-label">${label}</span>
               <input type="number" step="0.25" placeholder="kg" id="kg_${exIdx}_${s}">
               <input type="number" placeholder="reps" id="reps_${exIdx}_${s}">
               <input type="number" placeholder="rir" id="rir_${exIdx}_${s}">
@@ -105,7 +107,7 @@
 
         container.innerHTML += `
           <div class="card">
-            <div class="exercise-title">${name}</div>
+            <div class="exercise-title">${ex.name}</div>
             <div class="set-row" style="margin-bottom:4px;">
               <span></span>
               <span class="set-label">KG</span>
@@ -128,33 +130,32 @@
     async function submitWorkout() {
       const apiKey = localStorage.getItem('GEMINI_API_KEY');
       if (!apiKey) {
-        alert("Configura primero tu API Key gratuita de Google AI Studio.");
+        alert("Configura primero tu API Key gratuita de Google AI Studio usando el botón 'API Key'.");
         configureApiKey();
         return;
       }
 
-      let workoutSummary = `Entrenamiento de hoy (${currentRoutine.toUpperCase()}):\n`;
+      let workoutSummary = `Entrenamiento realizado (${currentRoutine.toUpperCase()}):\n`;
       let hasData = false;
 
-      routines[currentRoutine].forEach((name, exIdx) => {
-        const numSets = (name.includes("Gemelos")) ? 4 : 3;
+      routines[currentRoutine].forEach((ex, exIdx) => {
         let setsData = [];
-        for (let s = 1; s <= numSets; s++) {
+        for (let s = 1; s <= ex.sets; s++) {
           const kg = document.getElementById(`kg_${exIdx}_${s}`).value;
           const reps = document.getElementById(`reps_${exIdx}_${s}`).value;
           const rir = document.getElementById(`rir_${exIdx}_${s}`).value;
           if (kg && reps) {
             hasData = true;
-            setsData.push(`S${s}: ${kg}kg x ${reps} reps (RIR ${rir || 'N/A'})`);
+            setsData.push(`Serie ${s}: ${kg} kg x ${reps} reps (RIR ${rir !== "" ? rir : "no especificado"})`);
           }
         }
         if (setsData.length > 0) {
-          workoutSummary += `- ${name}: ${setsData.join(', ')}\n`;
+          workoutSummary += `\n* ${ex.name}:\n  - ${setsData.join('\n  - ')}\n`;
         }
       });
 
       if (!hasData) {
-        alert("Rellena al menos un ejercicio antes de enviar.");
+        alert("Introduce al menos una serie con peso y repeticiones.");
         return;
       }
 
@@ -164,9 +165,17 @@
       document.body.classList.add('loading');
 
       try {
-        const promptText = `Actúa como mi entrenador de hipertrofia. Este es mi entrenamiento de hoy:\n\n${workoutSummary}\n\nAnaliza el rendimiento serie por serie, valida la sobrecarga progresiva y dame los objetivos exactos de kilos y repeticiones para la próxima sesión de este mismo día de forma concisa.`;
+        const promptText = `Actúa como mi entrenador personal enfocado en hipertrofia basada en evidencia científica, sobrecarga progresiva y seguridad articular (especialmente protegiendo la zona lumbar y el tendón del tríceps en el codo izquierdo).
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+Este es el entrenamiento que acabo de completar:
+${workoutSummary}
+
+Por favor, realiza lo siguiente:
+1. Analiza el rendimiento serie por serie.
+2. Si hubo descansos intra-serie (rest-pause) o fallo técnico, evalúa si la carga fue excesiva.
+3. Establece los objetivos concretos de kilos, repeticiones y RIR diana para la próxima sesión de este mismo día de forma concisa.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -175,20 +184,32 @@
         });
 
         const data = await response.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Error al procesar la respuesta.";
-        
-        resBox.innerText = reply;
+
+        if (data.error) {
+          resBox.style.background = "#450a0a";
+          resBox.style.borderColor = "#dc2626";
+          resBox.innerText = `Error de API (${data.error.code}): ${data.error.message}`;
+        } else {
+          resBox.style.background = "#022c22";
+          resBox.style.borderColor = "#059669";
+          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió texto de respuesta.";
+          resBox.innerText = reply;
+        }
+
         resBox.style.display = 'block';
         resBox.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
-        alert("Error de conexión: " + err.message);
+        resBox.style.background = "#450a0a";
+        resBox.style.borderColor = "#dc2626";
+        resBox.innerText = "Error de red/conexión: " + err.message;
+        resBox.style.display = 'block';
       } finally {
         btn.innerText = "ENVIAR A GEMINI";
         document.body.classList.remove('loading');
       }
     }
 
-    // Inicializar con Push
+    // Cargar rutina Push por defecto
     loadRoutine('push');
   </script>
 </body>
