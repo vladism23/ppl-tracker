@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 14px; padding-bottom: 95px; }
 
-    /* Barra superior fija/flotante del cronómetro */
+    /* Barra superior del cronómetro: Doble de tamaño */
     #timer-banner {
       display: none;
       position: sticky;
@@ -19,25 +19,34 @@
       z-index: 200;
       background: #0284c7;
       color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      padding: 16px 18px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
       align-items: center;
       justify-content: space-between;
     }
-    #timer-display { font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-    .timer-controls { display: flex; gap: 6px; }
+    .timer-info { display: flex; align-items: baseline; gap: 10px; }
+    .timer-label { font-size: 0.95rem; text-transform: uppercase; font-weight: 700; opacity: 0.9; }
+    #timer-display { 
+      font-size: 2.6rem; 
+      font-weight: 900; 
+      font-variant-numeric: tabular-nums; 
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .timer-controls { display: flex; gap: 8px; }
     .timer-btn {
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.5);
       color: #fff;
-      padding: 5px 9px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 800;
       cursor: pointer;
     }
+    .timer-btn:active { background: rgba(255,255,255,0.4); }
 
     h1 { font-size: 1.15rem; text-align: center; margin-bottom: 12px; color: #38bdf8; letter-spacing: 0.05em; text-transform: uppercase; }
 
@@ -144,10 +153,10 @@
 </head>
 <body>
 
-  <!-- Cronómetro Flotante -->
+  <!-- Cronómetro Flotante Ampliado al Doble -->
   <div id="timer-banner">
-    <div>
-      <span style="font-size: 0.75rem; text-transform: uppercase; opacity: 0.9;">Descanso: </span>
+    <div class="timer-info">
+      <span class="timer-label">Descanso</span>
       <span id="timer-display">00:00</span>
     </div>
     <div class="timer-controls">
@@ -283,7 +292,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       container.innerHTML = '';
       document.getElementById('response-box').style.display = 'none';
 
-      // Cargar historial en texto y estructurado
       const rawTextHistory = localStorage.getItem(`LAST_TEXT_${type}`);
       const historyContentEl = document.getElementById('history-content');
       if (rawTextHistory) {
@@ -384,13 +392,11 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         return;
       }
       
-      // Guardar localmente también al copiar
       localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
       localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
       
       navigator.clipboard.writeText(summary).then(() => {
         alert("¡Copiado y guardado en el historial! Listo para pegar en el chat.");
-        // Refrescar el bloque de historial visible
         document.getElementById('history-content').innerText = summary;
       }).catch(err => {
         alert("Error al copiar: " + err);
@@ -472,7 +478,6 @@ Por favor:
       }
     }
 
-    // Inicializar cargando Push
     loadRoutine('push');
   </script>
 </body>
