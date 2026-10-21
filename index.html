@@ -725,7 +725,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
 
         const restLabel = ex.rest >= 120 ? `${ex.rest / 60}m` : `${ex.rest}s`;
         
-        // Solo renderiza el banner si existen registros previos
         const prevBannerHtml = previousSetsSummary.length > 0 
           ? `<div class="prev-performance-banner">⏮️ <b>Anterior:</b> ${previousSetsSummary.join(' | ')}</div>` 
           : '';
@@ -886,6 +885,3 @@ Por favor:
   </script>
 </body>
 </html>
-```<FollowUp>
-¿Quieres que definamos ya los ejercicios y pautas para el **Día 5** antes de cerrar la rutina?
-</FollowUp>
