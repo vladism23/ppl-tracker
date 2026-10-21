@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro: Números gigantes */
+    /* Barra superior del cronómetro con dígitos gigantes */
     #timer-banner {
       display: none;
       position: sticky;
@@ -161,7 +161,7 @@
     </div>
   </div>
 
-  <!-- Selector Desplegable de Rutinas (Arriba del todo, sin título intermedio) -->
+  <!-- Selector Desplegable de Rutinas -->
   <div class="nav-select-wrapper">
     <select class="nav-select" id="routine-selector" onchange="loadRoutine(this.value)">
       <option value="push">Día 1: Push (Empuje)</option>
@@ -236,44 +236,101 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
 
     let currentRoutine = 'push';
     let timerInterval = null;
-    let timerRemaining = 0;
 
+    // Sonido sutil al finalizar descanso (Web Audio API nativa sin archivos externos)
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.6);
+      } catch (e) {
+        // En navegadores restringidos continúa sin error
+      }
+    }
+
+    /* SISTEMA DE TEMPORIZADOR BASADO EN MARCA DE TIEMPO REAL */
     function startTimer(seconds) {
       clearInterval(timerInterval);
-      timerRemaining = seconds;
-      const banner = document.getElementById('timer-banner');
-      banner.style.display = 'flex';
-      renderTimer();
+      const targetTime = Date.now() + (seconds * 1000);
+      localStorage.setItem('TIMER_TARGET_MS', targetTime.toString());
 
-      timerInterval = setInterval(() => {
-        timerRemaining--;
-        if (timerRemaining <= 0) {
-          clearInterval(timerInterval);
-          timerRemaining = 0;
-          renderTimer();
-          if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
-        } else {
-          renderTimer();
-        }
-      }, 1000);
+      document.getElementById('timer-banner').style.display = 'flex';
+      tickTimer();
+
+      timerInterval = setInterval(tickTimer, 500);
+    }
+
+    function tickTimer() {
+      const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
+      if (!storedTarget) {
+        clearInterval(timerInterval);
+        document.getElementById('timer-banner').style.display = 'none';
+        return;
+      }
+
+      const diffMs = parseInt(storedTarget, 10) - Date.now();
+      const remainingSec = Math.ceil(diffMs / 1000);
+
+      if (remainingSec <= 0) {
+        clearInterval(timerInterval);
+        localStorage.removeItem('TIMER_TARGET_MS');
+        renderTimerDisplay(0);
+        playBeep();
+        if (navigator.vibrate) navigator.vibrate([250, 100, 250]);
+      } else {
+        renderTimerDisplay(remainingSec);
+      }
     }
 
     function addTimerTime(sec) {
-      timerRemaining += sec;
-      renderTimer();
+      const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
+      const base = storedTarget ? Math.max(parseInt(storedTarget, 10), Date.now()) : Date.now();
+      const newTarget = base + (sec * 1000);
+      localStorage.setItem('TIMER_TARGET_MS', newTarget.toString());
+      document.getElementById('timer-banner').style.display = 'flex';
+      clearInterval(timerInterval);
+      tickTimer();
+      timerInterval = setInterval(tickTimer, 500);
     }
 
     function stopTimer() {
       clearInterval(timerInterval);
+      localStorage.removeItem('TIMER_TARGET_MS');
       document.getElementById('timer-banner').style.display = 'none';
     }
 
-    function renderTimer() {
-      const min = Math.floor(timerRemaining / 60);
-      const sec = timerRemaining % 60;
+    function renderTimerDisplay(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
       document.getElementById('timer-display').innerText = 
         `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     }
+
+    // Comprobar al volver a entrar o al desbloquear la pantalla
+    function checkActiveTimerOnLoad() {
+      const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
+      if (storedTarget) {
+        document.getElementById('timer-banner').style.display = 'flex';
+        tickTimer();
+        clearInterval(timerInterval);
+        timerInterval = setInterval(tickTimer, 500);
+      }
+    }
+
+    // Detección cuando el usuario vuelve a enfocar la app
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        checkActiveTimerOnLoad();
+      }
+    });
 
     function loadRoutine(type) {
       currentRoutine = type;
@@ -472,7 +529,9 @@ Por favor:
       }
     }
 
+    // Inicializar rutinas y comprobar temporizador activo previo
     loadRoutine('push');
+    checkActiveTimerOnLoad();
   </script>
 </body>
 </html>
