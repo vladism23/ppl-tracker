@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro */
+    /* Barra superior del cronómetro: Azul por defecto, Rojo en tiempo negativo */
     #timer-banner {
       display: none;
       position: sticky;
@@ -71,24 +71,13 @@
       background: rgba(255,255,255,0.25);
       border: 1px solid rgba(255,255,255,0.5);
       color: #fff;
-      padding: 9px 11px;
+      padding: 9px 12px;
       border-radius: 9px;
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       font-weight: 800;
       cursor: pointer;
     }
     .timer-btn:active { background: rgba(255,255,255,0.45); }
-
-    /* Elementos ocultos para el stream PiP */
-    #pip-canvas, #pip-video {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      width: 320px;
-      height: 180px;
-      opacity: 0;
-      pointer-events: none;
-    }
 
     /* Menú Desplegable de Rutinas */
     .nav-select-wrapper { margin-bottom: 10px; }
@@ -224,17 +213,41 @@
     .warmup-step b { color: #38bdf8; }
     .warmup-target { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #334155; color: #a5f3fc; }
 
-    /* Filas de series */
-    .set-header { display: grid; grid-template-columns: 34px 1fr 1fr 1fr 40px; gap: 6px; margin-bottom: 4px; }
-    .set-header span { font-size: 0.7rem; color: #64748b; font-weight: 700; text-align: center; }
-    .set-row { display: grid; grid-template-columns: 34px 1fr 1fr 1fr 40px; gap: 6px; align-items: center; margin-bottom: 7px; }
-    .set-label { font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-align: center; }
+    /* Filas de series ampliadas (+25% de altura en casillas) */
+    .set-header { display: grid; grid-template-columns: 36px 1fr 1fr 1fr 44px; gap: 6px; margin-bottom: 6px; }
+    .set-header span { font-size: 0.72rem; color: #64748b; font-weight: 700; text-align: center; }
+    .set-row { display: grid; grid-template-columns: 36px 1fr 1fr 1fr 44px; gap: 6px; align-items: center; margin-bottom: 9px; }
+    .set-label { font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-align: center; }
 
-    input { background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; padding: 7px 2px; text-align: center; font-size: 0.95rem; width: 100%; -moz-appearance: textfield; }
+    /* Casillas táctiles aumentadas */
+    input { 
+      background: #0f172a; 
+      border: 1px solid #334155; 
+      border-radius: 8px; 
+      color: #fff; 
+      height: 48px;
+      padding: 0 4px; 
+      text-align: center; 
+      font-size: 1.12rem; 
+      font-weight: 600;
+      width: 100%; 
+      -moz-appearance: textfield; 
+    }
     input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input:focus { border-color: #38bdf8; outline: none; }
 
-    .btn-timer-trigger { background: #334155; border: 1px solid #475569; color: #e2e8f0; border-radius: 6px; padding: 6px 0; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-timer-trigger { 
+      background: #334155; 
+      border: 1px solid #475569; 
+      color: #e2e8f0; 
+      border-radius: 8px; 
+      height: 48px;
+      font-size: 1.15rem; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
     .btn-timer-trigger:active { background: #0284c7; }
 
     /* Barra inferior fija */
@@ -250,16 +263,11 @@
 </head>
 <body>
 
-  <!-- Elementos de Canvas y Video para Picture-in-Picture -->
-  <canvas id="pip-canvas" width="320" height="180"></canvas>
-  <video id="pip-video" muted playsinline autoplay></video>
-
   <!-- Cronómetro Flotante -->
   <div id="timer-banner">
     <div class="timer-top-row">
       <span id="timer-display">00:00</span>
       <div class="timer-controls">
-        <button class="timer-btn" onclick="togglePiP()" title="Ventana flotante sobre otras apps">⧉ PiP</button>
         <button class="timer-btn" onclick="addTimerTime(30)">+30s</button>
         <button class="timer-btn" onclick="stopTimer()">✕</button>
       </div>
@@ -535,8 +543,8 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
     let currentRoutine = 'push';
     let timerInterval = null;
     let hasAlertedOvertime = false;
-    let pipStream = null;
 
+    // Sonido sintetizado local
     function playBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -553,59 +561,32 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       } catch (e) {}
     }
 
-    /* RENDERIZADO EN CANVAS PARA PICTURE-IN-PICTURE */
-    function updatePiPCanvas(timeText, isOvertime) {
-      const canvas = document.getElementById('pip-canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      ctx.fillStyle = isOvertime ? '#dc2626' : '#0284c7';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(isOvertime ? 'EXCESO DESCANSO' : 'DESCANSO PPL', canvas.width / 2, 40);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 78px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(timeText, canvas.width / 2, 105);
-    }
-
-    /* GESTIÓN DE VENTANA FLOTANTE (PiP) */
-    async function togglePiP() {
-      const video = document.getElementById('pip-video');
-      const canvas = document.getElementById('pip-canvas');
-
-      try {
-        if (document.pictureInPictureElement) {
-          await document.exitPictureInPicture();
-          return;
-        }
-
-        if (!pipStream) {
-          pipStream = canvas.captureStream(30);
-          video.srcObject = pipStream;
-        }
-
-        await video.play();
-
-        if (video.requestPictureInPicture) {
-          await video.requestPictureInPicture();
-        } else if (video.webkitSetPresentationMode) {
-          video.webkitSetPresentationMode('picture-in-picture');
-        } else {
-          alert("Tu navegador no soporta Picture-in-Picture nativo.");
-        }
-      } catch (err) {
-        console.error("Error al iniciar PiP:", err);
+    // Solicitar permiso de notificaciones del sistema
+    function ensureNotificationPermission() {
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
       }
     }
 
-    /* TEMPORIZADOR BASE */
+    // Disparar notificación push local al llegar a 0
+    function triggerSystemNotification() {
+      if ("Notification" in window && Notification.permission === "granted") {
+        try {
+          new Notification("⏱️ ¡Descanso finalizado!", {
+            body: "Es hora de la siguiente serie. ¡A por ella!",
+            icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>",
+            requireInteraction: false
+          });
+        } catch (e) {
+          console.warn("Error enviando notificación:", e);
+        }
+      }
+    }
+
+    /* SISTEMA DE TEMPORIZADOR */
     function setTimerDirect(seconds) {
       clearInterval(timerInterval);
+      ensureNotificationPermission();
       hasAlertedOvertime = false;
       const targetTime = Date.now() + (seconds * 1000);
       localStorage.setItem('TIMER_TARGET_MS', targetTime.toString());
@@ -627,6 +608,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       if (!storedTarget) {
         clearInterval(timerInterval);
         document.getElementById('timer-banner').style.display = 'none';
+        document.title = "PPL Minimal Tracker";
         return;
       }
 
@@ -638,6 +620,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         banner.classList.add('overtime');
         if (!hasAlertedOvertime) {
           playBeep();
+          triggerSystemNotification();
           if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
           hasAlertedOvertime = true;
         }
@@ -667,10 +650,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       const banner = document.getElementById('timer-banner');
       banner.classList.remove('overtime');
       banner.style.display = 'none';
-
-      if (document.pictureInPictureElement) {
-        document.exitPictureInPicture().catch(() => {});
-      }
+      document.title = "PPL Minimal Tracker";
     }
 
     function renderTimerDisplay(totalSeconds, isNegative) {
@@ -681,7 +661,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       const formatted = `${prefix}${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
       
       document.getElementById('timer-display').innerText = formatted;
-      updatePiPCanvas(formatted, isNegative);
+      document.title = `(${formatted}) PPL Tracker`;
     }
 
     function checkActiveTimerOnLoad() {
@@ -751,7 +731,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           ? `<div class="prev-performance-banner">⏮️ <b>Anterior:</b> ${previousSetsSummary.join(' | ')}</div>` 
           : `<div class="prev-performance-banner" style="opacity: 0.6;">⏮️ Sin registros anteriores</div>`;
 
-        // Tarjeta con elemento details: cerrada por defecto (sin atributo open)
         container.innerHTML += `
           <details class="exercise-card">
             <summary>
