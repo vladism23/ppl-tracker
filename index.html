@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro: Azul por defecto, Rojo en tiempo negativo */
+    /* Barra superior del cronómetro */
     #timer-banner {
       display: none;
       position: sticky;
@@ -71,13 +71,24 @@
       background: rgba(255,255,255,0.25);
       border: 1px solid rgba(255,255,255,0.5);
       color: #fff;
-      padding: 9px 12px;
+      padding: 9px 11px;
       border-radius: 9px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 800;
       cursor: pointer;
     }
     .timer-btn:active { background: rgba(255,255,255,0.45); }
+
+    /* Elementos ocultos para el stream PiP */
+    #pip-canvas, #pip-video {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 320px;
+      height: 180px;
+      opacity: 0;
+      pointer-events: none;
+    }
 
     /* Menú Desplegable de Rutinas */
     .nav-select-wrapper { margin-bottom: 10px; }
@@ -192,16 +203,20 @@
 </head>
 <body>
 
-  <!-- Cronómetro Flotante con Presets Directos -->
+  <!-- Elementos de Canvas y Video para Picture-in-Picture -->
+  <canvas id="pip-canvas" width="320" height="180"></canvas>
+  <video id="pip-video" muted playsinline autoplay></video>
+
+  <!-- Cronómetro Flotante -->
   <div id="timer-banner">
     <div class="timer-top-row">
       <span id="timer-display">00:00</span>
       <div class="timer-controls">
+        <button class="timer-btn" onclick="togglePiP()" title="Ventana flotante sobre otras apps">⧉ PiP</button>
         <button class="timer-btn" onclick="addTimerTime(30)">+30s</button>
         <button class="timer-btn" onclick="stopTimer()">✕</button>
       </div>
     </div>
-    <!-- Accesos rápidos fijos a descansos frecuentes -->
     <div class="timer-presets">
       <button class="preset-btn" onclick="setTimerDirect(45)">45s</button>
       <button class="preset-btn" onclick="setTimerDirect(60)">60s</button>
@@ -472,6 +487,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
     let currentRoutine = 'push';
     let timerInterval = null;
     let hasAlertedOvertime = false;
+    let pipStream = null;
 
     function playBeep() {
       try {
@@ -489,7 +505,60 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       } catch (e) {}
     }
 
-    /* INICIAR O CAMBIAR TEMPORIZADOR */
+    /* RENDERIZADO EN CANVAS PARA PICTURE-IN-PICTURE */
+    function updatePiPCanvas(timeText, isOvertime) {
+      const canvas = document.getElementById('pip-canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Color de fondo idéntico al banner
+      ctx.fillStyle = isOvertime ? '#dc2626' : '#0284c7';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Texto superior
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(isOvertime ? 'EXCESO DESCANSO' : 'DESCANSO PPL', canvas.width / 2, 40);
+
+      // Dígitos grandes
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 78px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(timeText, canvas.width / 2, 105);
+    }
+
+    /* GESTIÓN DE VENTANA FLOTANTE (PiP) */
+    async function togglePiP() {
+      const video = document.getElementById('pip-video');
+      const canvas = document.getElementById('pip-canvas');
+
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+          return;
+        }
+
+        if (!pipStream) {
+          pipStream = canvas.captureStream(30); // 30 FPS
+          video.srcObject = pipStream;
+        }
+
+        await video.play();
+
+        if (video.requestPictureInPicture) {
+          await video.requestPictureInPicture();
+        } else if (video.webkitSetPresentationMode) {
+          video.webkitSetPresentationMode('picture-in-picture');
+        } else {
+          alert("Tu navegador no soporta Picture-in-Picture nativo.");
+        }
+      } catch (err) {
+        console.error("Error al iniciar PiP:", err);
+      }
+    }
+
+    /* TEMPORIZADOR BASE */
     function setTimerDirect(seconds) {
       clearInterval(timerInterval);
       hasAlertedOvertime = false;
@@ -553,6 +622,10 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       const banner = document.getElementById('timer-banner');
       banner.classList.remove('overtime');
       banner.style.display = 'none';
+
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture().catch(() => {});
+      }
     }
 
     function renderTimerDisplay(totalSeconds, isNegative) {
@@ -560,8 +633,10 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       const min = Math.floor(absSec / 60);
       const sec = absSec % 60;
       const prefix = isNegative ? "-" : "";
-      document.getElementById('timer-display').innerText = 
-        `${prefix}${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      const formatted = `${prefix}${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      
+      document.getElementById('timer-display').innerText = formatted;
+      updatePiPCanvas(formatted, isNegative);
     }
 
     function checkActiveTimerOnLoad() {
