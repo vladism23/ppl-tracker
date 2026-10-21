@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro: Azul por defecto, Rojo al pasarse */
+    /* Barra superior del cronómetro: Azul por defecto, Rojo en tiempo negativo */
     #timer-banner {
       display: none;
       position: sticky;
@@ -19,12 +19,12 @@
       z-index: 200;
       background: #0284c7;
       color: #fff;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-radius: 14px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.55);
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 8px;
       transition: background-color 0.3s ease;
     }
     #timer-banner.overtime {
@@ -32,22 +32,48 @@
       box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
     }
 
-    .timer-info { display: flex; align-items: baseline; gap: 8px; }
+    .timer-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
     #timer-display { 
-      font-size: 3.8rem; 
+      font-size: 3.6rem; 
       font-weight: 900; 
       font-variant-numeric: tabular-nums; 
       letter-spacing: 0.02em;
       line-height: 0.95;
     }
-    .timer-controls { display: flex; gap: 8px; align-items: center; }
+
+    /* Botones rápidos de descanso */
+    .timer-presets {
+      display: flex;
+      gap: 5px;
+      width: 100%;
+    }
+    .preset-btn {
+      flex: 1;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      padding: 7px 0;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+    }
+    .preset-btn:active { background: rgba(255,255,255,0.4); }
+
+    .timer-controls { display: flex; gap: 6px; align-items: center; }
     .timer-btn {
       background: rgba(255,255,255,0.25);
       border: 1px solid rgba(255,255,255,0.5);
       color: #fff;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 1.05rem;
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 0.95rem;
       font-weight: 800;
       cursor: pointer;
     }
@@ -166,14 +192,22 @@
 </head>
 <body>
 
-  <!-- Cronómetro Flotante -->
+  <!-- Cronómetro Flotante con Presets Directos -->
   <div id="timer-banner">
-    <div class="timer-info">
+    <div class="timer-top-row">
       <span id="timer-display">00:00</span>
+      <div class="timer-controls">
+        <button class="timer-btn" onclick="addTimerTime(30)">+30s</button>
+        <button class="timer-btn" onclick="stopTimer()">✕</button>
+      </div>
     </div>
-    <div class="timer-controls">
-      <button class="timer-btn" onclick="addTimerTime(30)">+30s</button>
-      <button class="timer-btn" onclick="stopTimer()">✕</button>
+    <!-- Accesos rápidos fijos a descansos frecuentes -->
+    <div class="timer-presets">
+      <button class="preset-btn" onclick="setTimerDirect(45)">45s</button>
+      <button class="preset-btn" onclick="setTimerDirect(60)">60s</button>
+      <button class="preset-btn" onclick="setTimerDirect(90)">90s</button>
+      <button class="preset-btn" onclick="setTimerDirect(120)">2m</button>
+      <button class="preset-btn" onclick="setTimerDirect(180)">3m</button>
     </div>
   </div>
 
@@ -439,7 +473,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
     let timerInterval = null;
     let hasAlertedOvertime = false;
 
-    // Tono sutil al terminar descanso
     function playBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -456,8 +489,8 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       } catch (e) {}
     }
 
-    /* SISTEMA DE TEMPORIZADOR CON TIEMPO NEGATIVO Y ALERTA ROJA */
-    function startTimer(seconds) {
+    /* INICIAR O CAMBIAR TEMPORIZADOR */
+    function setTimerDirect(seconds) {
       clearInterval(timerInterval);
       hasAlertedOvertime = false;
       const targetTime = Date.now() + (seconds * 1000);
@@ -469,6 +502,10 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       
       tickTimer();
       timerInterval = setInterval(tickTimer, 500);
+    }
+
+    function startTimer(seconds) {
+      setTimerDirect(seconds);
     }
 
     function tickTimer() {
@@ -484,7 +521,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       const banner = document.getElementById('timer-banner');
 
       if (diffSec < 0) {
-        // En negativo: cambiar a rojo y alertar una vez
         banner.classList.add('overtime');
         if (!hasAlertedOvertime) {
           playBeep();
@@ -493,7 +529,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         }
         renderTimerDisplay(diffSec, true);
       } else {
-        // En positivo: mantener azul
         banner.classList.remove('overtime');
         renderTimerDisplay(diffSec, false);
       }
