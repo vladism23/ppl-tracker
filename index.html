@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro */
+    /* Barra superior del cronómetro: Azul por defecto, Rojo en tiempo negativo */
     #timer-banner {
       display: none;
       position: sticky;
@@ -453,10 +453,10 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>Barra sola x 10 reps:</b> Movilidad de tobillo y posición adelantada (15-20 cm).</span>
-            <span class="warmup-step">2️⃣ <b>50% carga estimada x 5 reps:</b> Aproximación y profundidad.</span>
-            <span class="warmup-step">3️⃣ <b>75% carga estimada x 2 reps:</b> Activación neurológica sin fatiga.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (2.5 - 3 min desc):</b> 3 series x 8-10 reps. Pies 15-20 cm adelantados, agarre thumbless.</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 solo barra:</b> Movilidad de tobillo y posicionamiento adelantado (15-20 cm). Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x4 (50% objetivo):</b> Aproximación de profundidad y apoyo plantar. Descanso: 90s.</span>
+            <span class="warmup-step">3️⃣ <b>1x2 (80% objetivo):</b> Activación neuronal y brace abdominal. Descanso: 120s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Agarre thumbless, cero compresión cervical/lumbar.</div>`
         },
         {
           name: "Peso muerto rumano en guiada",
@@ -464,18 +464,18 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>Barra sola x 8 reps:</b> Bisagra pura de cadera y alineación.</span>
-            <span class="warmup-step">2️⃣ <b>50% carga estimada x 4 reps:</b> Con straps, tensión isquiosural.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (2.5 - 3 min desc):</b> 3 series x 8-10 reps. Straps obligatorios, cero compresión lumbar.</div>`
+            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo) con straps:</b> Fijación del patrón de bisagra de cadera. Descanso: 90s.</span>
+            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Tanteo del rango de elongación de isquios. Descanso: 120s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). No descender más allá de la pérdida de neutralidad lumbar.</div>`
         },
         {
-          name: "Extensión de cuádriceps",
-          targetReps: "12-15",
-          sets: 3,
+          name: "Gemelos guiada (S1-S2 Estir / S3-S4 Full)",
+          targetReps: "10-12",
+          sets: 4,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1 serie ligera x 6 reps:</b> Alinear el eje de la rodilla con la máquina.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Control estricto y pausa arriba.</div>`
+            <span class="warmup-step">1️⃣ <b>1x10 ligera:</b> Despertar tendón de Aquiles y flexión dorsal. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>S1 y S2 (90s desc):</b> Pausa estricta de 2 segundos en máximo estiramiento (Sóleo).<br>🎯 <b>S3 y S4 (90s desc):</b> Rango completo cadenciado a altas repeticiones.</div>`
         },
         {
           name: "Curl femoral en máquina",
@@ -483,8 +483,17 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1 serie ligera x 5 reps:</b> Rodar y fijar la cadera al banco.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Flexión explosiva y bajada en 3s.</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Ajuste del rodillo y anclaje pélvico. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Flexión de rodilla explosiva y excéntrica controlada (3s).</div>`
+        },
+        {
+          name: "Extensión de cuádriceps",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Lubricación de la rótula. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). 1s de contracción isométrica en extensión total.</div>`
         },
         {
           name: "Máquina de aductores",
@@ -492,17 +501,8 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1 serie x 8 reps suaves:</b> Comprobar rango articular sin molestia inguinal.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (60-90s desc):</b> 3 series x 12-15 reps. Rango amplio y contracción firme.</div>`
-        },
-        {
-          name: "Gemelos sentado en guiada",
-          targetReps: "10-12",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1 serie ligera x 8 reps:</b> Con step/bloque bajo los pies para máximo rango.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (60-90s desc):</b> 3 series x 10-12 reps. Pausa obligatoria de 2s abajo en máximo estiramiento (Sóleo).</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Movilidad de la articulación coxofemoral. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1). Rango amplio y sin rebotes en máxima apertura.</div>`
         }
       ],
       repaso: [
@@ -711,7 +711,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         let previousSetsSummary = [];
 
         for (let s = 1; s <= ex.sets; s++) {
-          const label = `S${s}`;
+          const label = (ex.name.includes("Gemelos") && s <= 2) ? `S${s}E` : `S${s}`;
           const prevSet = history[ex.name]?.[s - 1];
           const lastKg = prevSet?.kg || 'kg';
           const lastReps = prevSet?.reps || ex.targetReps || 'reps';
