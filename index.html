@@ -11,7 +11,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
 
-    /* Barra superior del cronómetro: Azul por defecto, Rojo en tiempo negativo */
+    /* Barra superior del cronómetro */
     #timer-banner {
       display: none;
       position: sticky;
@@ -153,8 +153,9 @@
     
     .exercise-title-wrap {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       gap: 8px;
+      flex-wrap: wrap;
     }
     .exercise-arrow {
       color: #38bdf8;
@@ -169,13 +170,23 @@
       font-weight: 600;
       color: #f1f5f9;
     }
+    .exercise-reps-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: #0b2540;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #1e3a5f;
+    }
     .rest-badge {
       font-size: 0.72rem;
       font-weight: 700;
-      color: #38bdf8;
-      background: #082f49;
+      color: #94a3b8;
+      background: #0f172a;
       padding: 3px 8px;
       border-radius: 6px;
+      white-space: nowrap;
     }
 
     .exercise-body {
@@ -321,221 +332,240 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       push: [
         {
           name: "Press banca en guiada",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x8-10 (40% objetivo):</b> Activación articular/vascular. Descanso: 45s.</span>
             <span class="warmup-step">2️⃣ <b>1x4-5 (65% objetivo):</b> Aproximación de carga y tempo. Descanso: 60s.</span>
             <span class="warmup-step">3️⃣ <b>1x2 (85% objetivo):</b> Activación neurológica/potenciación sin fatiga. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Agarre thumbless, codos a 45-60° (proteger tendón codo).</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Agarre thumbless, codos a 45-60° (proteger tendón codo).</div>`
         },
         {
           name: "Press militar en guiada",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x5 (50% objetivo):</b> Tanteo del patrón motor y banco (75-80°). Descanso: 60s.</span>
             <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Activación neurológica del deltoides anterior. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Cero hiperextensión lumbar; mantener glúteos y abdomen firmes.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Cero hiperextensión lumbar; mantener glúteos y abdomen firmes.</div>`
         },
         {
           name: "Extensiones Katana en polea",
+          targetReps: "10-12",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x10 muy ligera:</b> Lubricación de la bursa y tendón tríceps izquierdo. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Estiramiento profundo de la cabeza larga; sin rebotes en flexión máxima.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Estiramiento profundo de la cabeza larga; sin rebotes en flexión máxima.</div>`
         },
         {
           name: "Cruces en polea",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste del punto de anclaje y sensación esternal. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Microflexión de codo constante; énfasis en contracción pico (1s).</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Microflexión de codo constante; énfasis en contracción pico (1s).</div>`
         },
         {
           name: "Elevaciones laterales en banco inclinado",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque del deltoides lateral sin balanceo. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Apoyo torácico completo para eliminar inercia lumbar.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Apoyo torácico completo para eliminar inercia lumbar.</div>`
         },
         {
           name: "Extensiones tríceps en polea",
+          targetReps: "10-12",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Activación de cabezas lateral/medial. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Codos estables y muñecas neutras (cero torsión).</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 0-1). Codos estables y muñecas neutras (cero torsión).</div>`
         }
       ],
       pull: [
         {
           name: "Dominadas lastradas",
+          targetReps: "6-8",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x5 solo peso corporal:</b> Descompresión escapular y vascularización. Descanso: 60s.</span>
             <span class="warmup-step">2️⃣ <b>1x2 con 50% del lastre previsto:</b> Activación neurológica y agarre. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Depresión escapular estricta antes de flexionar codos.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 6-8 reps (RIR 1-2). Depresión escapular estricta antes de flexionar codos.</div>`
         },
         {
           name: "Remo en T con soporte",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo):</b> Ajuste del cojín esternal (cero carga en lumbares). Descanso: 60s.</span>
             <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Calibración de retracción y straps. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1. Máxima tracción dorsal sin despegar el pecho del apoyo.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1). Máxima tracción dorsal sin despegar el pecho del apoyo.</div>`
         },
         {
           name: "Rear delt polea unilateral",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Orientar el brazo en el plano escapular (45°). Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Cero retracción trapecial; aislamiento deltoides posterior.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Cero retracción trapecial; aislamiento deltoides posterior.</div>`
         },
         {
           name: "Remo en multipower",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x5 moderada con straps:</b> Fijación de bisagra cadera. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Tracción dirigida a la cadera/ombligo con espalda neutra.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Tracción dirigida a la cadera/ombligo con espalda neutra.</div>`
         },
         {
           name: "Curl predicador barra Z",
+          targetReps: "10-12",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Aclimatación bicipital en el banco Scott. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Frenar la bajada antes del bloqueo para proteger tendón bicipital.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Frenar la bajada antes del bloqueo para proteger tendón bicipital.</div>`
         },
         {
           name: "Curl Bayesian en polea",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x6 ligera:</b> Posicionar el paso adelantado y tensión de estiramiento. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Hombro en ligera extensión; tensión continua.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Hombro en ligera extensión; tensión continua.</div>`
         }
       ],
       legs: [
         {
           name: "Sentadilla en guiada",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 solo barra:</b> Movilidad de tobillo y posicionamiento adelantado (15-20 cm). Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x4 (50% objetivo):</b> Aproximación de profundidad y apoyo plantar. Descanso: 90s.</span>
-            <span class="warmup-step">3️⃣ <b>1x2 (80% objetivo):</b> Activación neuronal y brace abdominal. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Agarre thumbless, cero compresión cervical/lumbar.</div>`
+            <span class="warmup-step">1️⃣ <b>Barra sola x 10 reps:</b> Movilidad de tobillo y posición adelantada (15-20 cm).</span>
+            <span class="warmup-step">2️⃣ <b>50% carga estimada x 5 reps:</b> Aproximación y profundidad.</span>
+            <span class="warmup-step">3️⃣ <b>75% carga estimada x 2 reps:</b> Activación neurológica sin fatiga.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (2.5 - 3 min desc):</b> 3 series x 8-10 reps. Pies 15-20 cm adelantados, agarre thumbless.</div>`
         },
         {
           name: "Peso muerto rumano en guiada",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo) con straps:</b> Fijación del patrón de bisagra de cadera. Descanso: 90s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Tanteo del rango de elongación de isquios. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. No descender más allá de la pérdida de neutralidad lumbar.</div>`
-        },
-        {
-          name: "Gemelos guiada (S1-S2 Estir / S3-S4 Full)",
-          sets: 4,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x10 ligera:</b> Despertar tendón de Aquiles y flexión dorsal. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>S1 y S2 (90s desc):</b> Pausa estricta de 2 segundos en máximo estiramiento (Sóleo).<br>🎯 <b>S3 y S4 (90s desc):</b> Rango completo cadenciado a altas repeticiones.</div>`
-        },
-        {
-          name: "Curl femoral en máquina",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Ajuste del rodillo y anclaje pélvico. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Flexión de rodilla explosiva y excéntrica controlada (3s).</div>`
+            <span class="warmup-step">1️⃣ <b>Barra sola x 8 reps:</b> Bisagra pura de cadera y alineación.</span>
+            <span class="warmup-step">2️⃣ <b>50% carga estimada x 4 reps:</b> Con straps, tensión isquiosural.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (2.5 - 3 min desc):</b> 3 series x 8-10 reps. Straps obligatorios, cero compresión lumbar.</div>`
         },
         {
           name: "Extensión de cuádriceps",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Lubricación de la rótula. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. 1s de contracción isométrica en extensión total.</div>`
+            <span class="warmup-step">1️⃣ <b>1 serie ligera x 6 reps:</b> Alinear el eje de la rodilla con la máquina.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Control estricto y pausa arriba.</div>`
+        },
+        {
+          name: "Curl femoral en máquina",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1 serie ligera x 5 reps:</b> Rodar y fijar la cadera al banco.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Flexión explosiva y bajada en 3s.</div>`
         },
         {
           name: "Máquina de aductores",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Movilidad de la articulación coxofemoral. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Rango amplio y sin rebotes en máxima apertura.</div>`
+            <span class="warmup-step">1️⃣ <b>1 serie x 8 reps suaves:</b> Comprobar rango articular sin molestia inguinal.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (60-90s desc):</b> 3 series x 12-15 reps. Rango amplio y contracción firme.</div>`
+        },
+        {
+          name: "Gemelos sentado en guiada",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1 serie ligera x 8 reps:</b> Con step/bloque bajo los pies para máximo rango.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (60-90s desc):</b> 3 series x 10-12 reps. Pausa obligatoria de 2s abajo en máximo estiramiento (Sóleo).</div>`
         }
       ],
       repaso: [
         {
           name: "Pullover en polea alta con cuerda",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque en extensión dorsal y anclaje de codos. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1-2. Codos fijos en microflexión constante (cero estrés en tríceps).</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque en extensión dorsal y anclaje de codos. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1-2). Codos fijos en microflexión constante (cero estrés en tríceps).</div>`
         },
         {
           name: "Press inclinado 30° mancuernas",
+          targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x8 (40% objetivo):</b> Activación haz clavicular y estabilidad. Descanso: 60s.</span>
             <span class="warmup-step">2️⃣ <b>1x3 (70% objetivo):</b> Aproximación de agarre a 45°. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Banco a 30° estricto; agarre semi-neutro seguro para el codo.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Banco a 30° estricto; agarre semi-neutro seguro para el codo.</div>`
         },
         {
           name: "Trap Bar Shrugs (Barra hexagonal)",
+          targetReps: "10-12",
           sets: 3,
           rest: 180,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x6 barra sola con straps:</b> Ajuste de inclinación de torso (20° adelante). Descanso: 60s.</span>
             <span class="warmup-step">2️⃣ <b>1x2 (75% objetivo):</b> Activación de trapecio superior/medio. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1. Pausa de 2s en contracción alta; columna lumbar 100% protegida.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 10-12 reps (RIR 1). Pausa de 2s en contracción alta; columna lumbar 100% protegida.</div>`
         },
         {
           name: "Cruces polea alta (Pecho inferior)",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
             <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste de trayectoria hacia el ombligo. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Contracción isométrica de 1 segundo al cruzar muñecas.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Contracción isométrica de 1 segundo al cruzar muñecas.</div>`
         }
       ],
       dia5: [
         {
           name: "Ejercicio 1 (Por definir)",
+          targetReps: "8-12",
           sets: 3,
           rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 aproximación:</b> Pendiente de definir pautas de carga.</span>
-            <div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+          warmupHtml: `<div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
         },
         {
           name: "Ejercicio 2 (Por definir)",
+          targetReps: "8-12",
           sets: 3,
           rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 aproximación:</b> Pendiente de definir pautas de carga.</span>
-            <div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+          warmupHtml: `<div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
         },
         {
           name: "Ejercicio 3 (Por definir)",
+          targetReps: "8-12",
           sets: 3,
           rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 aproximación:</b> Pendiente de definir pautas de carga.</span>
-            <div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+          warmupHtml: `<div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
         }
       ]
     };
@@ -560,30 +590,9 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       } catch (e) {}
     }
 
-    function ensureNotificationPermission() {
-      if ("Notification" in window && Notification.permission === "default") {
-        Notification.requestPermission();
-      }
-    }
-
-    function triggerSystemNotification() {
-      if ("Notification" in window && Notification.permission === "granted") {
-        try {
-          new Notification("⏱️ ¡Descanso finalizado!", {
-            body: "Es hora de la siguiente serie. ¡A por ella!",
-            icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>",
-            requireInteraction: false
-          });
-        } catch (e) {
-          console.warn("Error enviando notificación:", e);
-        }
-      }
-    }
-
     /* SISTEMA DE TEMPORIZADOR */
     function setTimerDirect(seconds) {
       clearInterval(timerInterval);
-      ensureNotificationPermission();
       hasAlertedOvertime = false;
       const targetTime = Date.now() + (seconds * 1000);
       localStorage.setItem('TIMER_TARGET_MS', targetTime.toString());
@@ -617,7 +626,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         banner.classList.add('overtime');
         if (!hasAlertedOvertime) {
           playBeep();
-          triggerSystemNotification();
           if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
           hasAlertedOvertime = true;
         }
@@ -703,10 +711,10 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         let previousSetsSummary = [];
 
         for (let s = 1; s <= ex.sets; s++) {
-          const label = (ex.name.includes("Gemelos") && s <= 2) ? `S${s}E` : `S${s}`;
+          const label = `S${s}`;
           const prevSet = history[ex.name]?.[s - 1];
           const lastKg = prevSet?.kg || 'kg';
-          const lastReps = prevSet?.reps || 'reps';
+          const lastReps = prevSet?.reps || ex.targetReps || 'reps';
           const lastRir = prevSet?.rir !== undefined && prevSet?.rir !== '' ? `RIR ${prevSet.rir}` : 'rir';
 
           if (prevSet?.kg && prevSet?.reps) {
@@ -735,6 +743,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
               <div class="exercise-title-wrap">
                 <span class="exercise-arrow">▶</span>
                 <span class="exercise-title">${ex.name}</span>
+                <span class="exercise-reps-badge">${ex.targetReps} reps</span>
               </div>
               <span class="rest-badge">${restLabel}</span>
             </summary>
@@ -780,7 +789,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           }
         }
         if (setsData.length > 0) {
-          summary += `\n* ${ex.name}:\n  - ${setsData.join('\n  - ')}\n`;
+          summary += `\n* ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
         }
       });
 
