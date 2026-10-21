@@ -116,13 +116,23 @@
       margin-bottom: 8px;
     }
 
-    /* Calentamiento colapsable */
-    details.warmup-details { margin-bottom: 10px; font-size: 0.78rem; background: #0f172a; border-radius: 6px; padding: 6px 10px; border: 1px dashed #334155; }
-    details.warmup-details summary { cursor: pointer; color: #f59e0b; font-weight: 600; list-style: none; outline: none; }
+    /* Calentamiento colapsable detallado */
+    details.warmup-details { 
+      margin-bottom: 10px; 
+      font-size: 0.78rem; 
+      background: #0b132b; 
+      border-radius: 8px; 
+      padding: 8px 10px; 
+      border: 1px solid #1e3a5f; 
+    }
+    details.warmup-details summary { cursor: pointer; color: #f59e0b; font-weight: 700; list-style: none; outline: none; }
     details.warmup-details summary::-webkit-details-marker { display: none; }
     details.warmup-details summary:before { content: "▸ "; color: #f59e0b; }
     details.warmup-details[open] summary:before { content: "▾ "; }
-    .warmup-content { margin-top: 6px; color: #cbd5e1; line-height: 1.45; }
+    .warmup-content { margin-top: 8px; color: #cbd5e1; line-height: 1.5; }
+    .warmup-step { margin-bottom: 4px; display: block; }
+    .warmup-step b { color: #38bdf8; }
+    .warmup-target { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #334155; color: #a5f3fc; }
 
     /* Filas de series */
     .set-header { display: grid; grid-template-columns: 34px 1fr 1fr 1fr 40px; gap: 6px; margin-bottom: 4px; }
@@ -198,46 +208,231 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
 
     const routines = {
       push: [
-        { name: "Press banca en guiada", sets: 3, rest: 180, warmup: "Aprox: 1x8 (40%), 1x4 (60%), 1x2 (80%). Codos a 45-60°, agarre thumbless." },
-        { name: "Press militar en guiada", sets: 3, rest: 180, warmup: "Aprox: 1x5 ligera. Banco a 75-80°, no hiper-extender lumbares." },
-        { name: "Extensiones Katana en polea", sets: 3, rest: 90, warmup: "1x8 muy ligera para engrasar codo izquierdo." },
-        { name: "Cruces en polea", sets: 3, rest: 90, warmup: "Directo a serie efectiva con microflexión fija de codo." },
-        { name: "Elevaciones laterales en banco inclinado", sets: 3, rest: 90, warmup: "Asegurar apoyo en banco para cero inercia." },
-        { name: "Extensiones tríceps en polea", sets: 3, rest: 90, warmup: "Codos pegados al costado, muñecas neutras." }
+        {
+          name: "Press banca en guiada",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8-10 (40% objetivo):</b> Activación articular/vascular. Descanso: 45s.</span>
+            <span class="warmup-step">2️⃣ <b>1x4-5 (65% objetivo):</b> Aproximación de carga y tempo. Descanso: 60s.</span>
+            <span class="warmup-step">3️⃣ <b>1x2 (85% objetivo):</b> Activación neurológica/potenciación sin fatiga. Descanso: 120s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Agarre thumbless, codos a 45-60° (proteger tendón codo).</div>`
+        },
+        {
+          name: "Press militar en guiada",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x5 (50% objetivo):</b> Tanteo del patrón motor y banco (75-80°). Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Activación neurológica del deltoides anterior. Descanso: 90s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Cero hiperextensión lumbar; mantener glúteos y abdomen firmes.</div>`
+        },
+        {
+          name: "Extensiones Katana en polea",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x10 muy ligera:</b> Lubricación de la bursa y tendón tríceps izquierdo. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Estiramiento profundo de la cabeza larga; sin rebotes en flexión máxima.</div>`
+        },
+        {
+          name: "Cruces en polea",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste del punto de anclaje y sensación esternal. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Microflexión de codo constante; énfasis en contracción pico (1s).</div>`
+        },
+        {
+          name: "Elevaciones laterales en banco inclinado",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque del deltoides lateral sin balanceo. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Apoyo torácico completo para eliminar inercia lumbar.</div>`
+        },
+        {
+          name: "Extensiones tríceps en polea",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Activación de cabezas lateral/medial. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Codos estables y muñecas neutras (cero torsión).</div>`
+        }
       ],
       pull: [
-        { name: "Dominadas lastradas", sets: 3, rest: 180, warmup: "Aprox: 1x5 peso corporal, 1x2 con 50% del lastre." },
-        { name: "Remo en T con soporte", sets: 3, rest: 180, warmup: "Aprox: 1x6 (50%). Esternón pegado al cojín: cero lumbar." },
-        { name: "Rear delt polea unilateral", sets: 3, rest: 90, warmup: "Alineado con el plano de la fibra posterior." },
-        { name: "Remo en multipower", sets: 3, rest: 180, warmup: "Aprox: 1x5 ligera con straps." },
-        { name: "Curl predicador barra Z", sets: 3, rest: 90, warmup: "Axilas fijas en el cojín, sin hiperextender abajo." },
-        { name: "Curl Bayesian en polea", sets: 3, rest: 90, warmup: "Paso adelante, tensión continua en estiramiento." }
+        {
+          name: "Dominadas lastradas",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x5 solo peso corporal:</b> Descompresión escapular y vascularización. Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x2 con 50% del lastre previsto:</b> Activación neurológica y agarre. Descanso: 120s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Depresión escapular estricta antes de flexionar codos.</div>`
+        },
+        {
+          name: "Remo en T con soporte",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo):</b> Ajuste del cojín esternal (cero carga en lumbares). Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Calibración de retracción y straps. Descanso: 90s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1. Máxima tracción dorsal sin despegar el pecho del apoyo.</div>`
+        },
+        {
+          name: "Rear delt polea unilateral",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Orientar el brazo en el plano escapular (45°). Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Cero retracción trapecial; aislamiento deltoides posterior.</div>`
+        },
+        {
+          name: "Remo en multipower",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x5 moderada con straps:</b> Fijación de bisagra cadera. Descanso: 90s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Tracción dirigida a la cadera/ombligo con espalda neutra.</div>`
+        },
+        {
+          name: "Curl predicador barra Z",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Aclimatación bicipital en el banco Scott. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Frenar la bajada antes del bloqueo para proteger tendón bicipital.</div>`
+        },
+        {
+          name: "Curl Bayesian en polea",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 ligera:</b> Posicionar el paso adelantado y tensión de estiramiento. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Hombro en ligera extensión; tensión continua.</div>`
+        }
       ],
       legs: [
-        { name: "Sentadilla en guiada", sets: 3, rest: 180, warmup: "Aprox: 1x8 barra, 1x4 (50%), 1x2 (75%). Pies 15 cm adelantados." },
-        { name: "Peso muerto rumano en guiada", sets: 3, rest: 180, warmup: "Aprox: 1x5 ligera con straps. Enfoque puro en bisagra." },
-        { name: "Gemelos guiada (S1-S2 Estir / S3-S4 Full)", sets: 4, rest: 90, warmup: "S1 y S2: pausa obligatoria de 2 s abajo." },
-        { name: "Curl femoral en máquina", sets: 3, rest: 90, warmup: "Cadera anclada firmemente al banco." },
-        { name: "Extensión de cuádriceps", sets: 3, rest: 90, warmup: "Control estricto en la bajada, pausa arriba." },
-        { name: "Máquina de aductores", sets: 3, rest: 90, warmup: "Rango amplio y controlado." }
+        {
+          name: "Sentadilla en guiada",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 solo barra:</b> Movilidad de tobillo y posicionamiento adelantado (15-20 cm). Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x4 (50% objetivo):</b> Aproximación de profundidad y apoyo plantar. Descanso: 90s.</span>
+            <span class="warmup-step">3️⃣ <b>1x2 (80% objetivo):</b> Activación neuronal y brace abdominal. Descanso: 120s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Agarre thumbless, cero compresión cervical/lumbar.</div>`
+        },
+        {
+          name: "Peso muerto rumano en guiada",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo) con straps:</b> Fijación del patrón de bisagra de cadera. Descanso: 90s.</span>
+            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Tanteo del rango de elongación de isquios. Descanso: 120s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. No descender más allá de la pérdida de neutralidad lumbar.</div>`
+        },
+        {
+          name: "Gemelos guiada (S1-S2 Estir / S3-S4 Full)",
+          sets: 4,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x10 ligera:</b> Despertar tendón de Aquiles y flexión dorsal. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>S1 y S2 (90s desc):</b> Pausa estricta de 2 segundos en máximo estiramiento (Sóleo).<br>🎯 <b>S3 y S4 (90s desc):</b> Rango completo cadenciado a altas repeticiones.</div>`
+        },
+        {
+          name: "Curl femoral en máquina",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Ajuste del rodillo y anclaje pélvico. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Flexión de rodilla explosiva y excéntrica controlada (3s).</div>`
+        },
+        {
+          name: "Extensión de cuádriceps",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Lubricación de la rótula. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. 1s de contracción isométrica en extensión total.</div>`
+        },
+        {
+          name: "Máquina de aductores",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Movilidad de la articulación coxofemoral. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1. Rango amplio y sin rebotes en máxima apertura.</div>`
+        }
       ],
       repaso: [
-        { name: "Pullover en polea alta con cuerda", sets: 3, rest: 90, warmup: "1x8 ligera. Codos fijos en microflexión (cero tríceps)." },
-        { name: "Press inclinado 30° mancuernas", sets: 3, rest: 180, warmup: "Aprox: 1x8 (40%), 1x3 (70%). Agarre semi-neutro a 45°." },
-        { name: "Trap Bar Shrugs (Barra hexagonal)", sets: 3, rest: 180, warmup: "1x6 barra sola con straps, torso 20° al frente, pausa 2 s arriba." },
-        { name: "Cruces polea alta (Pecho inferior)", sets: 3, rest: 90, warmup: "Trayectoria diagonal hacia el ombligo, 1 s de apriete." }
+        {
+          name: "Pullover en polea alta con cuerda",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque en extensión dorsal y anclaje de codos. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 1-2. Codos fijos en microflexión constante (cero estrés en tríceps).</div>`
+        },
+        {
+          name: "Press inclinado 30° mancuernas",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 (40% objetivo):</b> Activación haz clavicular y estabilidad. Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x3 (70% objetivo):</b> Aproximación de agarre a 45°. Descanso: 90s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1-2. Banco a 30° estricto; agarre semi-neutro seguro para el codo.</div>`
+        },
+        {
+          name: "Trap Bar Shrugs (Barra hexagonal)",
+          sets: 3,
+          rest: 180,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 barra sola con straps:</b> Ajuste de inclinación de torso (20° adelante). Descanso: 60s.</span>
+            <span class="warmup-step">2️⃣ <b>1x2 (75% objetivo):</b> Activación de trapecio superior/medio. Descanso: 90s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> RIR 1. Pausa de 2s en contracción alta; columna lumbar 100% protegida.</div>`
+        },
+        {
+          name: "Cruces polea alta (Pecho inferior)",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste de trayectoria hacia el ombligo. Descanso: 45s antes de S1.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> RIR 0-1. Contracción isométrica de 1 segundo al cruzar muñecas.</div>`
+        }
       ],
       dia5: [
-        { name: "Ejercicio 1 (Por definir)", sets: 3, rest: 90, warmup: "Pendiente de acordar ejercicios y estructura." },
-        { name: "Ejercicio 2 (Por definir)", sets: 3, rest: 90, warmup: "Pendiente de acordar ejercicios y estructura." },
-        { name: "Ejercicio 3 (Por definir)", sets: 3, rest: 90, warmup: "Pendiente de acordar ejercicios y estructura." }
+        {
+          name: "Ejercicio 1 (Por definir)",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 aproximación:</b> Pendiente de definir pautas de carga.</span>
+            <div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+        },
+        {
+          name: "Ejercicio 2 (Por definir)",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 aproximación:</b> Pendiente de definir pautas de carga.</span>
+            <div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+        },
+        {
+          name: "Ejercicio 3 (Por definir)",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 aproximación:</b> Pendiente de definir pautas de carga.</span>
+            <div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+        }
       ]
     };
 
     let currentRoutine = 'push';
     let timerInterval = null;
 
-    // Sonido sutil al finalizar descanso (Web Audio API nativa sin archivos externos)
+    // Tono sutil al terminar descanso (Web Audio API)
     function playBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -246,13 +441,13 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.type = "sine";
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Nota D5
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.6);
       } catch (e) {
-        // En navegadores restringidos continúa sin error
+        // Ignorar si el navegador bloquea audio antes de interacción
       }
     }
 
@@ -314,7 +509,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
     }
 
-    // Comprobar al volver a entrar o al desbloquear la pantalla
     function checkActiveTimerOnLoad() {
       const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
       if (storedTarget) {
@@ -325,7 +519,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       }
     }
 
-    // Detección cuando el usuario vuelve a enfocar la app
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         checkActiveTimerOnLoad();
@@ -391,8 +584,8 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
             </div>
             ${prevBannerHtml}
             <details class="warmup-details">
-              <summary>Calentamiento / Claves</summary>
-              <div class="warmup-content">${ex.warmup}</div>
+              <summary>Calentamiento / Objetivos / Claves</summary>
+              <div class="warmup-content">${ex.warmupHtml}</div>
             </details>
             <div class="set-header">
               <span></span>
@@ -529,7 +722,6 @@ Por favor:
       }
     }
 
-    // Inicializar rutinas y comprobar temporizador activo previo
     loadRoutine('push');
     checkActiveTimerOnLoad();
   </script>
