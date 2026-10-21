@@ -142,11 +142,58 @@
       overflow-y: auto;
     }
 
-    /* Tarjetas de ejercicios */
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-    .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-    .exercise-title { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; }
-    .rest-badge { font-size: 0.7rem; font-weight: 700; color: #38bdf8; background: #082f49; padding: 2px 6px; border-radius: 4px; }
+    /* Tarjetas colapsables de ejercicios */
+    details.exercise-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    details.exercise-card summary {
+      padding: 14px 12px;
+      cursor: pointer;
+      list-style: none;
+      outline: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    details.exercise-card summary::-webkit-details-marker { display: none; }
+    
+    .exercise-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .exercise-arrow {
+      color: #38bdf8;
+      font-size: 0.8rem;
+      transition: transform 0.2s ease;
+    }
+    details.exercise-card[open] .exercise-arrow {
+      transform: rotate(90deg);
+    }
+    .exercise-title {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+    .rest-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #38bdf8;
+      background: #082f49;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .exercise-body {
+      padding: 0 12px 12px 12px;
+      border-top: 1px solid #283548;
+      padding-top: 10px;
+    }
 
     /* Línea de referencia del entreno anterior en cada tarjeta */
     .prev-performance-banner {
@@ -159,7 +206,7 @@
       margin-bottom: 8px;
     }
 
-    /* Calentamiento colapsable detallado */
+    /* Calentamiento colapsable */
     details.warmup-details { 
       margin-bottom: 10px; 
       font-size: 0.78rem; 
@@ -243,6 +290,7 @@
     <div class="history-body" id="history-content">No hay registros de sesiones anteriores para esta rutina.</div>
   </details>
 
+  <!-- Lista de Ejercicios -->
   <div id="exercise-list"></div>
 
   <div id="response-box"></div>
@@ -511,17 +559,14 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Color de fondo idéntico al banner
       ctx.fillStyle = isOvertime ? '#dc2626' : '#0284c7';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Texto superior
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(isOvertime ? 'EXCESO DESCANSO' : 'DESCANSO PPL', canvas.width / 2, 40);
 
-      // Dígitos grandes
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 78px -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.textBaseline = 'middle';
@@ -540,7 +585,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         }
 
         if (!pipStream) {
-          pipStream = canvas.captureStream(30); // 30 FPS
+          pipStream = canvas.captureStream(30);
           video.srcObject = pipStream;
         }
 
@@ -706,26 +751,32 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           ? `<div class="prev-performance-banner">⏮️ <b>Anterior:</b> ${previousSetsSummary.join(' | ')}</div>` 
           : `<div class="prev-performance-banner" style="opacity: 0.6;">⏮️ Sin registros anteriores</div>`;
 
+        // Tarjeta con elemento details: cerrada por defecto (sin atributo open)
         container.innerHTML += `
-          <div class="card">
-            <div class="card-header">
-              <span class="exercise-title">${ex.name}</span>
+          <details class="exercise-card">
+            <summary>
+              <div class="exercise-title-wrap">
+                <span class="exercise-arrow">▶</span>
+                <span class="exercise-title">${ex.name}</span>
+              </div>
               <span class="rest-badge">${restLabel}</span>
+            </summary>
+            <div class="exercise-body">
+              ${prevBannerHtml}
+              <details class="warmup-details">
+                <summary>Calentamiento / Objetivos / Claves</summary>
+                <div class="warmup-content">${ex.warmupHtml}</div>
+              </details>
+              <div class="set-header">
+                <span></span>
+                <span>KG</span>
+                <span>REPS</span>
+                <span>RIR</span>
+                <span>TIMER</span>
+              </div>
+              ${setsHtml}
             </div>
-            ${prevBannerHtml}
-            <details class="warmup-details">
-              <summary>Calentamiento / Objetivos / Claves</summary>
-              <div class="warmup-content">${ex.warmupHtml}</div>
-            </details>
-            <div class="set-header">
-              <span></span>
-              <span>KG</span>
-              <span>REPS</span>
-              <span>RIR</span>
-              <span>TIMER</span>
-            </div>
-            ${setsHtml}
-          </div>`;
+          </details>`;
       });
     }
 
