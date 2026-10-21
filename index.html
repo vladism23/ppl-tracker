@@ -544,7 +544,6 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
     let timerInterval = null;
     let hasAlertedOvertime = false;
 
-    // Sonido sintetizado local
     function playBeep() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -561,14 +560,12 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       } catch (e) {}
     }
 
-    // Solicitar permiso de notificaciones del sistema
     function ensureNotificationPermission() {
       if ("Notification" in window && Notification.permission === "default") {
         Notification.requestPermission();
       }
     }
 
-    // Disparar notificación push local al llegar a 0
     function triggerSystemNotification() {
       if ("Notification" in window && Notification.permission === "granted") {
         try {
@@ -727,9 +724,11 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         }
 
         const restLabel = ex.rest >= 120 ? `${ex.rest / 60}m` : `${ex.rest}s`;
+        
+        // Solo renderiza el banner si existen registros previos
         const prevBannerHtml = previousSetsSummary.length > 0 
           ? `<div class="prev-performance-banner">⏮️ <b>Anterior:</b> ${previousSetsSummary.join(' | ')}</div>` 
-          : `<div class="prev-performance-banner" style="opacity: 0.6;">⏮️ Sin registros anteriores</div>`;
+          : '';
 
         container.innerHTML += `
           <details class="exercise-card">
@@ -887,3 +886,6 @@ Por favor:
   </script>
 </body>
 </html>
+```<FollowUp>
+¿Quieres que definamos ya los ejercicios y pautas para el **Día 5** antes de cerrar la rutina?
+</FollowUp>
