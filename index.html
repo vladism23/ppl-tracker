@@ -507,13 +507,13 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       ],
       repaso: [
         {
-          name: "Pullover en polea alta con cuerda",
+          name: "Straight-Bar Cable Pullover (Pullover polea barra recta)",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque en extensión dorsal y anclaje de codos. Descanso: 45s.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1-2). Codos fijos en microflexión constante (cero estrés en tríceps).</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Agarre prono a la anchura de hombros y anclaje dorsal. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1-2). Codos fijos en microflexión constante (cero flexo-extensión para blindar tendón de tríceps).</div>`
         },
         {
           name: "Press inclinado 30° mancuernas",
@@ -685,6 +685,27 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       }
     });
 
+    /* AUTO-GUARDADO DE BORRADOR */
+    function saveDraft() {
+      let draft = {};
+      routines[currentRoutine].forEach((ex, exIdx) => {
+        draft[exIdx] = {};
+        for (let s = 1; s <= ex.sets; s++) {
+          const kg = document.getElementById(`kg_${exIdx}_${s}`)?.value || '';
+          const reps = document.getElementById(`reps_${exIdx}_${s}`)?.value || '';
+          const rir = document.getElementById(`rir_${exIdx}_${s}`)?.value || '';
+          if (kg || reps || rir) {
+            draft[exIdx][s] = { kg, reps, rir };
+          }
+        }
+      });
+      localStorage.setItem(`DRAFT_${currentRoutine}`, JSON.stringify(draft));
+    }
+
+    function clearDraft() {
+      localStorage.removeItem(`DRAFT_${currentRoutine}`);
+    }
+
     function loadRoutine(type) {
       currentRoutine = type;
       const selector = document.getElementById('routine-selector');
@@ -705,6 +726,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       }
 
       const history = JSON.parse(localStorage.getItem(`LAST_SESSION_${type}`) || '{}');
+      const draft = JSON.parse(localStorage.getItem(`DRAFT_${type}`) || '{}');
 
       routines[type].forEach((ex, exIdx) => {
         let setsHtml = '';
@@ -717,6 +739,10 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           const lastReps = prevSet?.reps || ex.targetReps || 'reps';
           const lastRir = prevSet?.rir !== undefined && prevSet?.rir !== '' ? `RIR ${prevSet.rir}` : 'rir';
 
+          const currentKg = draft[exIdx]?.[s]?.kg ?? '';
+          const currentReps = draft[exIdx]?.[s]?.reps ?? '';
+          const currentRir = draft[exIdx]?.[s]?.rir ?? '';
+
           if (prevSet?.kg && prevSet?.reps) {
             previousSetsSummary.push(`${label}: ${prevSet.kg}kg x ${prevSet.reps} (RIR ${prevSet.rir ?? '-'})`);
           }
@@ -724,9 +750,9 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           setsHtml += `
             <div class="set-row">
               <span class="set-label">${label}</span>
-              <input type="number" step="0.25" placeholder="${lastKg}" id="kg_${exIdx}_${s}">
-              <input type="number" placeholder="${lastReps}" id="reps_${exIdx}_${s}">
-              <input type="number" placeholder="${lastRir}" id="rir_${exIdx}_${s}">
+              <input type="number" step="0.25" placeholder="${lastKg}" value="${currentKg}" id="kg_${exIdx}_${s}" oninput="saveDraft()">
+              <input type="number" placeholder="${lastReps}" value="${currentReps}" id="reps_${exIdx}_${s}" oninput="saveDraft()">
+              <input type="number" placeholder="${lastRir}" value="${currentRir}" id="rir_${exIdx}_${s}" oninput="saveDraft()">
               <button class="btn-timer-trigger" onclick="startTimer(${ex.rest})" title="Iniciar descanso">⏱️</button>
             </div>`;
         }
@@ -805,6 +831,7 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       
       localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
       localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
+      clearDraft();
       
       navigator.clipboard.writeText(summary).then(() => {
         alert("¡Copiado y guardado en el historial! Listo para pegar en el chat.");
@@ -852,7 +879,7 @@ Por favor:
 2. Evalúa series con fallo técnico, descansos o fatiga articular (codo izquierdo y lumbar).
 3. Establece las cargas diana y repeticiones para la siguiente sesión de forma concisa.`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -870,6 +897,7 @@ Por favor:
         } else {
           localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
           localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
+          clearDraft();
           document.getElementById('history-content').innerText = summary;
 
           resBox.style.background = "#022c22";
