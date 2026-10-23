@@ -2,354 +2,272 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f172a">
-  <title>PPL Minimal Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Rutina de Entrenamiento</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; padding: 12px; padding-bottom: 95px; }
+    :root {
+      --bg: #121316;
+      --card-bg: #1c1e24;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #2e333d;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
 
-    /* Barra superior del cronómetro: Azul por defecto, Rojo en tiempo negativo */
-    #timer-banner {
-      display: none;
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      background: #0284c7;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.55);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
       flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .nav-tabs {
+      display: flex;
       gap: 8px;
-      transition: background-color 0.3s ease;
-    }
-    #timer-banner.overtime {
-      background: #dc2626 !important;
-      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+      overflow-x: auto;
+      padding-bottom: 4px;
     }
 
-    .timer-top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-    #timer-display { 
-      font-size: 3.6rem; 
-      font-weight: 900; 
-      font-variant-numeric: tabular-nums; 
-      letter-spacing: 0.02em;
-      line-height: 0.95;
-    }
-
-    /* Botones rápidos de descanso */
-    .timer-presets {
-      display: flex;
-      gap: 5px;
-      width: 100%;
-    }
-    .preset-btn {
-      flex: 1;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.35);
-      color: #fff;
-      padding: 7px 0;
+    .nav-tab {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 14px;
       border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 800;
       cursor: pointer;
-      text-align: center;
+      white-space: nowrap;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
     }
-    .preset-btn:active { background: rgba(255,255,255,0.4); }
 
-    .timer-controls { display: flex; gap: 6px; align-items: center; }
-    .timer-btn {
-      background: rgba(255,255,255,0.25);
-      border: 1px solid rgba(255,255,255,0.5);
-      color: #fff;
-      padding: 9px 12px;
-      border-radius: 9px;
-      font-size: 0.95rem;
-      font-weight: 800;
-      cursor: pointer;
+    .nav-tab.active {
+      background-color: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
     }
-    .timer-btn:active { background: rgba(255,255,255,0.45); }
 
-    /* Menú Desplegable de Rutinas */
-    .nav-select-wrapper { margin-bottom: 10px; }
-    .nav-select {
-      width: 100%;
-      padding: 12px 14px;
-      background: #1e293b;
+    .timer-container {
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      background-color: #1e293b;
       border: 1px solid #334155;
-      color: #38bdf8;
       border-radius: 10px;
-      font-weight: 700;
-      font-size: 1.05rem;
-      cursor: pointer;
-      text-align-last: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
-    .nav-select:focus { border-color: #38bdf8; outline: none; }
 
-    /* Panel de Historial de Sesión Anterior */
-    .history-card {
-      background: #111e38;
-      border: 1px solid #1e3a8a;
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin-bottom: 12px;
-      font-size: 0.82rem;
-    }
-    .history-card summary {
-      color: #60a5fa;
+    .timer-display {
+      font-size: 1.25rem;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--success);
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-timer {
+      background-color: #334155;
+      color: var(--text);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
       cursor: pointer;
-      list-style: none;
-      outline: none;
+      font-size: 0.85rem;
+    }
+
+    .exercise-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .exercise-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
     }
-    .history-card summary::-webkit-details-marker { display: none; }
-    .history-card summary:before { content: "📋 Ver Historial Sesión Anterior ▾"; }
-    .history-card[open] summary:before { content: "📋 Ocultar Historial ▴"; }
-    .history-body {
-      margin-top: 8px;
-      color: #cbd5e1;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 0.78rem;
-      background: #0b1329;
+
+    .exercise-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .exercise-meta {
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .warmup-box {
+      background-color: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent);
+      padding: 10px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .warmup-target {
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    .sets-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+    }
+
+    .sets-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .sets-table td {
+      padding: 4px 4px 4px 0;
+    }
+
+    .sets-table input {
+      width: 100%;
+      background-color: #121316;
+      border: 1px solid var(--border);
+      color: var(--text);
       padding: 8px;
       border-radius: 6px;
-      max-height: 200px;
-      overflow-y: auto;
+      font-size: 0.95rem;
+      text-align: center;
     }
 
-    /* Tarjetas colapsables de ejercicios */
-    details.exercise-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      overflow: hidden;
-    }
-    details.exercise-card summary {
-      padding: 14px 12px;
-      cursor: pointer;
-      list-style: none;
+    .sets-table input:focus {
       outline: none;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
+      border-color: var(--accent);
     }
-    details.exercise-card summary::-webkit-details-marker { display: none; }
-    
-    .exercise-title-wrap {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .exercise-arrow {
-      color: #38bdf8;
-      font-size: 0.8rem;
-      transition: transform 0.2s ease;
-    }
-    details.exercise-card[open] .exercise-arrow {
-      transform: rotate(90deg);
-    }
-    .exercise-title {
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-    .exercise-reps-badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #38bdf8;
-      background: #0b2540;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid #1e3a5f;
-    }
-    .rest-badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #94a3b8;
-      background: #0f172a;
-      padding: 3px 8px;
+
+    .btn-complete {
+      background-color: #242b35;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 12px;
       border-radius: 6px;
-      white-space: nowrap;
+      cursor: pointer;
+      font-size: 0.85rem;
+      width: 100%;
     }
 
-    .exercise-body {
-      padding: 0 12px 12px 12px;
-      border-top: 1px solid #283548;
-      padding-top: 10px;
+    .btn-complete.completed {
+      background-color: var(--success);
+      color: #ffffff;
+      border-color: var(--success);
     }
-
-    /* Línea de referencia del entreno anterior en cada tarjeta */
-    .prev-performance-banner {
-      font-size: 0.75rem;
-      color: #93c5fd;
-      background: rgba(30, 58, 138, 0.35);
-      border-left: 3px solid #3b82f6;
-      padding: 4px 8px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-    }
-
-    /* Calentamiento colapsable */
-    details.warmup-details { 
-      margin-bottom: 10px; 
-      font-size: 0.78rem; 
-      background: #0b132b; 
-      border-radius: 8px; 
-      padding: 8px 10px; 
-      border: 1px solid #1e3a5f; 
-    }
-    details.warmup-details summary { cursor: pointer; color: #f59e0b; font-weight: 700; list-style: none; outline: none; }
-    details.warmup-details summary::-webkit-details-marker { display: none; }
-    details.warmup-details summary:before { content: "▸ "; color: #f59e0b; }
-    details.warmup-details[open] summary:before { content: "▾ "; }
-    .warmup-content { margin-top: 8px; color: #cbd5e1; line-height: 1.5; }
-    .warmup-step { margin-bottom: 4px; display: block; }
-    .warmup-step b { color: #38bdf8; }
-    .warmup-target { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #334155; color: #a5f3fc; }
-
-    /* Filas de series ampliadas (+25% de altura en casillas) */
-    .set-header { display: grid; grid-template-columns: 36px 1fr 1fr 1fr 44px; gap: 6px; margin-bottom: 6px; }
-    .set-header span { font-size: 0.72rem; color: #64748b; font-weight: 700; text-align: center; }
-    .set-row { display: grid; grid-template-columns: 36px 1fr 1fr 1fr 44px; gap: 6px; align-items: center; margin-bottom: 9px; }
-    .set-label { font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-align: center; }
-
-    /* Casillas táctiles aumentadas */
-    input { 
-      background: #0f172a; 
-      border: 1px solid #334155; 
-      border-radius: 8px; 
-      color: #fff; 
-      height: 48px;
-      padding: 0 4px; 
-      text-align: center; 
-      font-size: 1.12rem; 
-      font-weight: 600;
-      width: 100%; 
-      -moz-appearance: textfield; 
-    }
-    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    input:focus { border-color: #38bdf8; outline: none; }
-
-    .btn-timer-trigger { 
-      background: #334155; 
-      border: 1px solid #475569; 
-      color: #e2e8f0; 
-      border-radius: 8px; 
-      height: 48px;
-      font-size: 1.15rem; 
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-    }
-    .btn-timer-trigger:active { background: #0284c7; }
-
-    /* Barra inferior fija */
-    .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #334155; padding: 10px 14px; display: flex; gap: 8px; z-index: 100; }
-    .btn-action { border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; padding: 11px; cursor: pointer; }
-    .btn-cfg { flex: 1; background: #334155; color: #f8fafc; }
-    .btn-copy { flex: 1.2; background: #475569; color: #f8fafc; }
-    .btn-send { flex: 2; background: #10b981; color: #042f2e; }
-
-    #response-box { display: none; border-radius: 10px; padding: 14px; margin-top: 16px; font-size: 0.88rem; line-height: 1.5; white-space: pre-wrap; }
-    .loading { opacity: 0.5; pointer-events: none; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>Control de Entrenamiento</h1>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchRoutine('dia1')">Día 1 (Push)</button>
+        <button class="nav-tab" onclick="switchRoutine('dia2')">Día 2 (Pull)</button>
+        <button class="nav-tab" onclick="switchRoutine('dia3')">Día 3 (Piernas)</button>
+        <button class="nav-tab" onclick="switchRoutine('dia4')">Día 4 (Repaso)</button>
+        <button class="nav-tab" onclick="switchRoutine('dia5')">Día 5 (Hombro / Brazo)</button>
+      </div>
+    </header>
 
-  <!-- Cronómetro Flotante -->
-  <div id="timer-banner">
-    <div class="timer-top-row">
-      <span id="timer-display">00:00</span>
+    <div class="timer-container" id="timerBox">
+      <div>
+        <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Descanso</span>
+        <span class="timer-display" id="timerDisplay">00:00</span>
+      </div>
       <div class="timer-controls">
-        <button class="timer-btn" onclick="addTimerTime(30)">+30s</button>
-        <button class="timer-btn" onclick="stopTimer()">✕</button>
+        <button class="btn-timer" onclick="addSeconds(30)">+30s</button>
+        <button class="btn-timer" onclick="resetTimer()">Reset</button>
       </div>
     </div>
-    <div class="timer-presets">
-      <button class="preset-btn" onclick="setTimerDirect(45)">45s</button>
-      <button class="preset-btn" onclick="setTimerDirect(60)">60s</button>
-      <button class="preset-btn" onclick="setTimerDirect(90)">90s</button>
-      <button class="preset-btn" onclick="setTimerDirect(120)">2m</button>
-      <button class="preset-btn" onclick="setTimerDirect(180)">3m</button>
-    </div>
-  </div>
 
-  <!-- Selector Desplegable de Rutinas -->
-  <div class="nav-select-wrapper">
-    <select class="nav-select" id="routine-selector" onchange="loadRoutine(this.value)">
-      <option value="push">Día 1: Push (Empuje)</option>
-      <option value="pull">Día 2: Pull (Tirón)</option>
-      <option value="legs">Día 3: Legs (Pierna)</option>
-      <option value="repaso">Día 4: Repaso (Pecho / Espalda)</option>
-      <option value="dia5">Día 5: (Pendiente de definir)</option>
-    </select>
-  </div>
-
-  <!-- Bloque de Historial General de la Sesión Previa -->
-  <details class="history-card" id="history-panel">
-    <summary></summary>
-    <div class="history-body" id="history-content">No hay registros de sesiones anteriores para esta rutina.</div>
-  </details>
-
-  <!-- Lista de Ejercicios -->
-  <div id="exercise-list"></div>
-
-  <div id="response-box"></div>
-
-  <div class="footer-bar">
-    <button class="btn-action btn-cfg" onclick="configureApiKey()">API Key</button>
-    <button class="btn-action btn-copy" onclick="copyWorkoutToClipboard()">Copiar</button>
-    <button class="btn-action btn-send" id="btn-submit" onclick="submitWorkout()">Enviar Gemini</button>
+    <main id="routineContainer"></main>
   </div>
 
   <script>
-    const SYSTEM_INSTRUCTION = `Eres el entrenador personal del usuario, experto en hipertrofia basada en evidencia, sobrecarga progresiva y salud articular.
-Pautas ortopédicas permanentes:
-- Codo izquierdo: Cuidar inserción del tendón del tríceps. Katana extensions en vez de presses franceses.
-- Zona lumbar: Cero compresión axial innecesaria. Pies 15-20 cm adelantados y agarre thumbless en sentadilla guiada; peso muerto rumano en guiada con straps.
-- Gemelos (Sóleo): 2 series pesadas en estiramiento (parada 2 s abajo) + 2 series en rango completo.
-Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
-
     const routines = {
-      push: [
+      dia1: [
         {
-          name: "Press banca en guiada",
-          targetReps: "8-10",
+          name: "Press banca con barra guiada",
+          targetReps: "6-8",
           sets: 3,
-          rest: 180,
+          rest: 120,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8-10 (40% objetivo):</b> Activación articular/vascular. Descanso: 45s.</span>
-            <span class="warmup-step">2️⃣ <b>1x4-5 (65% objetivo):</b> Aproximación de carga y tempo. Descanso: 60s.</span>
-            <span class="warmup-step">3️⃣ <b>1x2 (85% objetivo):</b> Activación neurológica/potenciación sin fatiga. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Agarre thumbless, codos a 45-60° (proteger tendón codo).</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 barra sola:</b> Calentamiento articular y ajuste de banco. Descanso: 45s.</span>
+            <span class="warmup-step">2️⃣ <b>1x4 al 50%:</b> Activación neuromuscular. Descanso: 60s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (120s desc):</b> 3 series x 6-8 reps (RIR 1). Agarre sin pulgar si molesta muñeca/codo; retracción escapular estricta.</div>`
         },
         {
           name: "Press militar en guiada",
           targetReps: "8-10",
           sets: 3,
-          rest: 180,
+          rest: 120,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x5 (50% objetivo):</b> Tanteo del patrón motor y banco (75-80°). Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Activación neurológica del deltoides anterior. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Cero hiperextensión lumbar; mantener glúteos y abdomen firmes.</div>`
+            <span class="warmup-step">1️⃣ <b>1x6 al 50%:</b> Ajuste de banco a 75° y trayectoria frontal. Descanso: 60s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (120s desc):</b> 3 series x 8-10 reps (RIR 1). Evitar hiperextensión lumbar contra el respaldo.</div>`
+        },
+        {
+          name: "Cruces en polea / Elevaciones laterales polea",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1). Tensión constante en el deltoides lateral.</div>`
         },
         {
           name: "Extensiones Katana en polea",
@@ -357,568 +275,309 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x10 muy ligera:</b> Lubricación de la bursa y tendón tríceps izquierdo. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Estiramiento profundo de la cabeza larga; sin rebotes en flexión máxima.</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Ajuste del ángulo escapular (30°-45°). Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1-2). Cabeza larga del tríceps en estiramiento seguro para codo izq.</div>`
         },
         {
-          name: "Cruces en polea",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste del punto de anclaje y sensación esternal. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Microflexión de codo constante; énfasis en contracción pico (1s).</div>`
-        },
-        {
-          name: "Elevaciones laterales en banco inclinado",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Enfoque del deltoides lateral sin balanceo. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Apoyo torácico completo para eliminar inercia lumbar.</div>`
-        },
-        {
-          name: "Extensiones tríceps en polea",
+          name: "Extensiones de tríceps en polea",
           targetReps: "10-12",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Activación de cabezas lateral/medial. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 0-1). Codos estables y muñecas neutras (cero torsión).</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Bloqueo controlado abajo sin balancear el torso.</div>`
         }
       ],
-      pull: [
+
+      dia2: [
         {
-          name: "Dominadas lastradas",
-          targetReps: "6-8",
-          sets: 3,
-          rest: 180,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x5 solo peso corporal:</b> Descompresión escapular y vascularización. Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 con 50% del lastre previsto:</b> Activación neurológica y agarre. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 6-8 reps (RIR 1-2). Depresión escapular estricta antes de flexionar codos.</div>`
-        },
-        {
-          name: "Remo en T con soporte",
+          name: "Pulldown al pecho en polea",
           targetReps: "8-10",
           sets: 3,
-          rest: 180,
+          rest: 120,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo):</b> Ajuste del cojín esternal (cero carga en lumbares). Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Calibración de retracción y straps. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1). Máxima tracción dorsal sin despegar el pecho del apoyo.</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 al 50%:</b> Tracción escapular y calentamiento dorsal. Descanso: 60s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (120s desc):</b> 3 series x 8-10 reps (RIR 1). Guiar los codos a la cadera sin balanceo lumbar.</div>`
+        },
+        {
+          name: "Remo en polea baja con agarre neutro",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 120,
+          warmupHtml: `
+            <div class="warmup-target">🎯 <b>Efectivas (120s desc):</b> 3 series x 8-10 reps (RIR 1). Torso erguido sin arquear zona lumbar.</div>`
         },
         {
           name: "Rear delt polea unilateral",
           targetReps: "12-15",
           sets: 3,
-          rest: 90,
+          rest: 60,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Orientar el brazo en el plano escapular (45°). Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Cero retracción trapecial; aislamiento deltoides posterior.</div>`
-        },
-        {
-          name: "Remo en multipower",
-          targetReps: "8-10",
-          sets: 3,
-          rest: 180,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x5 moderada con straps:</b> Fijación de bisagra cadera. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Tracción dirigida a la cadera/ombligo con espalda neutra.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (60s desc):</b> 3 series x 12-15 reps (RIR 0-1). Foco estricto en deltoides posterior.</div>`
         },
         {
           name: "Curl predicador barra Z",
-          targetReps: "10-12",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Aclimatación bicipital en el banco Scott. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Frenar la bajada antes del bloqueo para proteger tendón bicipital.</div>`
-        },
-        {
-          name: "Curl Bayesian en polea",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 ligera:</b> Posicionar el paso adelantado y tensión de estiramiento. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Hombro en ligera extensión; tensión continua.</div>`
-        }
-      ],
-      legs: [
-        {
-          name: "Sentadilla en guiada",
           targetReps: "8-10",
           sets: 3,
-          rest: 180,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 solo barra:</b> Movilidad de tobillo y posicionamiento adelantado (15-20 cm). Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x4 (50% objetivo):</b> Aproximación de profundidad y apoyo plantar. Descanso: 90s.</span>
-            <span class="warmup-step">3️⃣ <b>1x2 (80% objetivo):</b> Activación neuronal y brace abdominal. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Agarre thumbless, cero compresión cervical/lumbar.</div>`
-        },
-        {
-          name: "Peso muerto rumano en guiada",
-          targetReps: "8-10",
-          sets: 3,
-          rest: 180,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo) con straps:</b> Fijación del patrón de bisagra de cadera. Descanso: 90s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Tanteo del rango de elongación de isquios. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). No descender más allá de la pérdida de neutralidad lumbar.</div>`
-        },
-        {
-          name: "Gemelos guiada (S1-S2 Estir / S3-S4 Full)",
-          targetReps: "10-12",
-          sets: 4,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x10 ligera:</b> Despertar tendón de Aquiles y flexión dorsal. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>S1 y S2 (90s desc):</b> Pausa estricta de 2 segundos en máximo estiramiento (Sóleo).<br>🎯 <b>S3 y S4 (90s desc):</b> Rango completo cadenciado a altas repeticiones.</div>`
+            <span class="warmup-step">1️⃣ <b>1x6 ligera:</b> Regulación de axilas sobre el apoyo. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 8-10 reps (RIR 1). Máxima tensión en acortamiento.</div>`
         },
         {
-          name: "Curl femoral en máquina",
+          name: "Curl bayesian en polea",
           targetReps: "10-12",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 moderada:</b> Ajuste del rodillo y anclaje pélvico. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Flexión de rodilla explosiva y excéntrica controlada (3s).</div>`
-        },
-        {
-          name: "Extensión de cuádriceps",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Lubricación de la rótula. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). 1s de contracción isométrica en extensión total.</div>`
-        },
-        {
-          name: "Máquina de aductores",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Movilidad de la articulación coxofemoral. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1). Rango amplio y sin rebotes en máxima apertura.</div>`
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Énfasis en cabeza larga del bíceps con brazo retrasado.</div>`
         }
       ],
-      repaso: [
+
+      dia3: [
+        {
+          name: "Prensa de piernas 45°",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 150,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x10 sin peso:</b> Comprobar rango articular. Descanso: 45s.</span>
+            <span class="warmup-step">2️⃣ <b>1x6 al 50%:</b> Ajuste de empuje plantar. Descanso: 60s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (150s desc):</b> 3 series x 8-10 reps (RIR 1-2). Espalda baja y glúteos pegados a la base; no despegar pelvis.</div>`
+        },
+        {
+          name: "Curl femoral tumbado",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Almohadilla fija y cadera presionada al banco.</div>`
+        },
+        {
+          name: "Extensiones de cuádriceps",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Pausa de 1 segundo arriba.</div>`
+        },
+        {
+          name: "Gemelos en máquina o prensa",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 60,
+          warmupHtml: `
+            <div class="warmup-target">🎯 <b>Efectivas (60s desc):</b> 3 series x 12-15 reps (RIR 0). Parada de 2s abajo en estiramiento.</div>`
+        }
+      ],
+
+      dia4: [
         {
           name: "Pullover polea barra recta",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Agarre prono a la anchura de hombros y anclaje dorsal. Descanso: 45s.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1-2). Codos fijos en microflexión constante (cero flexo-extensión para blindar tendón de tríceps).</div>`
-        },
-        {
-          name: "Press inclinado 30° mancuernas",
-          targetReps: "8-10",
-          sets: 3,
-          rest: 180,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 (40% objetivo):</b> Activación haz clavicular y estabilidad. Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x3 (70% objetivo):</b> Aproximación de agarre a 45°. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Banco a 30° estricto; agarre semi-neutro seguro para el codo.</div>`
-        },
-        {
-          name: "Trap Bar Shrugs (Barra hexagonal)",
           targetReps: "10-12",
           sets: 3,
-          rest: 180,
+          rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 barra sola con straps:</b> Ajuste de inclinación de torso (20° adelante). Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 (75% objetivo):</b> Activación de trapecio superior/medio. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 10-12 reps (RIR 1). Pausa de 2s en contracción alta; columna lumbar 100% protegida.</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Ajuste de distancia y bisagra de cadera. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Torsos estables a 45°; tracción dorsal sin tirar de tríceps.</div>`
         },
         {
-          name: "Cruces polea alta (Pecho inferior)",
+          name: "Shrugs con barra hexagonal",
+          targetReps: "6-8",
+          sets: 3,
+          rest: 120,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 al 50%:</b> Colocación en el centro de gravedad. Descanso: 60s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (120s desc):</b> 3 series x 6-8 reps (RIR 1-2). Pausa de 1 segundo arriba; cero balanceo lumbar.</div>`
+        }
+      ],
+
+      dia5: [
+        {
+          name: "Press de hombro en poleas sentado",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste de trayectoria hacia el ombligo. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Contracción isométrica de 1 segundo al cruzar muñecas.</div>`
-        }
-      ],
-      dia5: [
-        {
-          name: "Ejercicio 1 (Por definir)",
-          targetReps: "8-12",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `<div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+            <span class="warmup-step">1️⃣ <b>1x8 muy ligera:</b> Regulación de altura de banco y poleas convergentes. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 2). Tensión constante; no bloquear codos arriba para evitar cizalla.</div>`
         },
         {
-          name: "Ejercicio 2 (Por definir)",
-          targetReps: "8-12",
+          name: "Curl en polea baja barra recta",
+          targetReps: "10-12",
           sets: 3,
           rest: 90,
-          warmupHtml: `<div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 moderada:</b> Ajuste de postura y codos al costado. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Flexión estricta sin balanceo lumbar.</div>`
         },
         {
-          name: "Ejercicio 3 (Por definir)",
-          targetReps: "8-12",
+          name: "Elevaciones laterales en polea unilateral",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 60,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Polea a la altura del muslo. Descanso: 30s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (60s desc entre brazos):</b> 3 series x 12-15 reps (RIR 1). Guiar la muñeca proyectando hacia la pared.</div>`
+        },
+        {
+          name: "Extensiones tríceps en polea agarre supino",
+          targetReps: "12-15",
           sets: 3,
           rest: 90,
-          warmupHtml: `<div class="warmup-target">🎯 <b>Efectivas:</b> Pendiente de acordar con el usuario.</div>`
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Fijación de codos al costado y muñecas rectas. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1-2). Extensión controlada sin tirones bruscos.</div>`
+        },
+        {
+          name: "Pájaros con mancuernas en banco inclinado",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Pecho apoyado en respaldo a 30-40°. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 1). Apertura en plano escapular; sin encoger hombros al trapecio.</div>`
+        },
+        {
+          name: "Curl martillo con barra Z",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x6 aproximación:</b> Ajuste de agarre neutro/inclinado. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Énfasis en braquiorradial y braquial anterior; bajada en 2-3s.</div>`
+        },
+        {
+          name: "Rear Delt Fly en máquina / cruces polea",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Alineación de manos con la altura de hombros. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Mantener codos con microflexión fija y apretar atrás 1s.</div>`
+        },
+        {
+          name: "Extensiones tríceps cross-body con mancuerna",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x8 muy ligera:</b> Banco plano; bajar mancuerna hacia el hombro opuesto. Descanso: 45s.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 2). Trayectoria diagonal suave cuidando la inserción del codo izq; no bloquear violento.</div>`
         }
       ]
     };
 
-    let currentRoutine = 'push';
+    let currentDay = 'dia1';
     let timerInterval = null;
-    let hasAlertedOvertime = false;
+    let secondsLeft = 0;
 
-    function playBeep() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.6);
-      } catch (e) {}
-    }
-
-    /* SISTEMA DE TEMPORIZADOR */
-    function setTimerDirect(seconds) {
-      clearInterval(timerInterval);
-      hasAlertedOvertime = false;
-      const targetTime = Date.now() + (seconds * 1000);
-      localStorage.setItem('TIMER_TARGET_MS', targetTime.toString());
-
-      const banner = document.getElementById('timer-banner');
-      banner.classList.remove('overtime');
-      banner.style.display = 'flex';
-      
-      tickTimer();
-      timerInterval = setInterval(tickTimer, 500);
-    }
-
-    function startTimer(seconds) {
-      setTimerDirect(seconds);
-    }
-
-    function tickTimer() {
-      const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
-      if (!storedTarget) {
-        clearInterval(timerInterval);
-        document.getElementById('timer-banner').style.display = 'none';
-        document.title = "PPL Minimal Tracker";
-        return;
-      }
-
-      const diffMs = parseInt(storedTarget, 10) - Date.now();
-      const diffSec = Math.floor(diffMs / 1000);
-      const banner = document.getElementById('timer-banner');
-
-      if (diffSec < 0) {
-        banner.classList.add('overtime');
-        if (!hasAlertedOvertime) {
-          playBeep();
-          if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
-          hasAlertedOvertime = true;
-        }
-        renderTimerDisplay(diffSec, true);
-      } else {
-        banner.classList.remove('overtime');
-        renderTimerDisplay(diffSec, false);
-      }
-    }
-
-    function addTimerTime(sec) {
-      const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
-      const base = storedTarget ? Math.max(parseInt(storedTarget, 10), Date.now()) : Date.now();
-      const newTarget = base + (sec * 1000);
-      localStorage.setItem('TIMER_TARGET_MS', newTarget.toString());
-      
-      hasAlertedOvertime = false;
-      document.getElementById('timer-banner').style.display = 'flex';
-      clearInterval(timerInterval);
-      tickTimer();
-      timerInterval = setInterval(tickTimer, 500);
-    }
-
-    function stopTimer() {
-      clearInterval(timerInterval);
-      localStorage.removeItem('TIMER_TARGET_MS');
-      const banner = document.getElementById('timer-banner');
-      banner.classList.remove('overtime');
-      banner.style.display = 'none';
-      document.title = "PPL Minimal Tracker";
-    }
-
-    function renderTimerDisplay(totalSeconds, isNegative) {
-      const absSec = Math.abs(totalSeconds);
-      const min = Math.floor(absSec / 60);
-      const sec = absSec % 60;
-      const prefix = isNegative ? "-" : "";
-      const formatted = `${prefix}${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
-      
-      document.getElementById('timer-display').innerText = formatted;
-      document.title = `(${formatted}) PPL Tracker`;
-    }
-
-    function checkActiveTimerOnLoad() {
-      const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
-      if (storedTarget) {
-        document.getElementById('timer-banner').style.display = 'flex';
-        tickTimer();
-        clearInterval(timerInterval);
-        timerInterval = setInterval(tickTimer, 500);
-      }
-    }
-
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        checkActiveTimerOnLoad();
-      }
-    });
-
-    /* AUTO-GUARDADO DE BORRADOR */
-    function saveDraft() {
-      let draft = {};
-      routines[currentRoutine].forEach((ex, exIdx) => {
-        draft[exIdx] = {};
-        for (let s = 1; s <= ex.sets; s++) {
-          const kg = document.getElementById(`kg_${exIdx}_${s}`)?.value || '';
-          const reps = document.getElementById(`reps_${exIdx}_${s}`)?.value || '';
-          const rir = document.getElementById(`rir_${exIdx}_${s}`)?.value || '';
-          if (kg || reps || rir) {
-            draft[exIdx][s] = { kg, reps, rir };
-          }
-        }
-      });
-      localStorage.setItem(`DRAFT_${currentRoutine}`, JSON.stringify(draft));
-    }
-
-    function clearDraft() {
-      localStorage.removeItem(`DRAFT_${currentRoutine}`);
-    }
-
-    function loadRoutine(type) {
-      currentRoutine = type;
-      const selector = document.getElementById('routine-selector');
-      if (selector && selector.value !== type) {
-        selector.value = type;
-      }
-
-      const container = document.getElementById('exercise-list');
+    function renderRoutine(dayKey) {
+      const container = document.getElementById('routineContainer');
+      const exercises = routines[dayKey];
       container.innerHTML = '';
-      document.getElementById('response-box').style.display = 'none';
 
-      const rawTextHistory = localStorage.getItem(`LAST_TEXT_${type}`);
-      const historyContentEl = document.getElementById('history-content');
-      if (rawTextHistory) {
-        historyContentEl.innerText = rawTextHistory;
-      } else {
-        historyContentEl.innerText = "No hay registros previos guardados para este día.";
-      }
+      exercises.forEach((ex, exIndex) => {
+        const card = document.createElement('div');
+        card.className = 'exercise-card';
 
-      const history = JSON.parse(localStorage.getItem(`LAST_SESSION_${type}`) || '{}');
-      const draft = JSON.parse(localStorage.getItem(`DRAFT_${type}`) || '{}');
-
-      routines[type].forEach((ex, exIdx) => {
-        let setsHtml = '';
-        let previousSetsSummary = [];
-
+        let setsRowsHtml = '';
         for (let s = 1; s <= ex.sets; s++) {
-          const label = (ex.name.includes("Gemelos") && s <= 2) ? `S${s}E` : `S${s}`;
-          const prevSet = history[ex.name]?.[s - 1];
-          const lastKg = prevSet?.kg || 'kg';
-          const lastReps = prevSet?.reps || ex.targetReps || 'reps';
-          const lastRir = prevSet?.rir !== undefined && prevSet?.rir !== '' ? `RIR ${prevSet.rir}` : 'rir';
+          const weightKey = `${dayKey}_ex${exIndex}_s${s}_weight`;
+          const repsKey = `${dayKey}_ex${exIndex}_s${s}_reps`;
+          const savedWeight = localStorage.getItem(weightKey) || '';
+          const savedReps = localStorage.getItem(repsKey) || '';
 
-          const currentKg = draft[exIdx]?.[s]?.kg ?? '';
-          const currentReps = draft[exIdx]?.[s]?.reps ?? '';
-          const currentRir = draft[exIdx]?.[s]?.rir ?? '';
-
-          if (prevSet?.kg && prevSet?.reps) {
-            previousSetsSummary.push(`${label}: ${prevSet.kg}kg x ${prevSet.reps} (RIR ${prevSet.rir ?? '-'})`);
-          }
-
-          setsHtml += `
-            <div class="set-row">
-              <span class="set-label">${label}</span>
-              <input type="number" step="0.25" placeholder="${lastKg}" value="${currentKg}" id="kg_${exIdx}_${s}" oninput="saveDraft()">
-              <input type="number" placeholder="${lastReps}" value="${currentReps}" id="reps_${exIdx}_${s}" oninput="saveDraft()">
-              <input type="number" placeholder="${lastRir}" value="${currentRir}" id="rir_${exIdx}_${s}" oninput="saveDraft()">
-              <button class="btn-timer-trigger" onclick="startTimer(${ex.rest})" title="Iniciar descanso">⏱️</button>
-            </div>`;
+          setsRowsHtml += `
+            <tr>
+              <td style="font-size:0.85rem; color:var(--text-muted); width: 24px;">#${s}</td>
+              <td>
+                <input type="number" step="0.5" placeholder="kg" value="${savedWeight}"
+                  oninput="localStorage.setItem('${weightKey}', this.value)">
+              </td>
+              <td>
+                <input type="number" placeholder="${ex.targetReps}" value="${savedReps}"
+                  oninput="localStorage.setItem('${repsKey}', this.value)">
+              </td>
+              <td style="width: 70px;">
+                <button class="btn-complete" onclick="startRest(${ex.rest}, this)">OK</button>
+              </td>
+            </tr>
+          `;
         }
 
-        const restLabel = ex.rest >= 120 ? `${ex.rest / 60}m` : `${ex.rest}s`;
-        
-        const prevBannerHtml = previousSetsSummary.length > 0 
-          ? `<div class="prev-performance-banner">⏮️ <b>Anterior:</b> ${previousSetsSummary.join(' | ')}</div>` 
-          : '';
-
-        container.innerHTML += `
-          <details class="exercise-card">
-            <summary>
-              <div class="exercise-title-wrap">
-                <span class="exercise-arrow">▶</span>
-                <span class="exercise-title">${ex.name}</span>
-                <span class="exercise-reps-badge">${ex.targetReps} reps</span>
-              </div>
-              <span class="rest-badge">${restLabel}</span>
-            </summary>
-            <div class="exercise-body">
-              ${prevBannerHtml}
-              <details class="warmup-details">
-                <summary>Calentamiento / Objetivos / Claves</summary>
-                <div class="warmup-content">${ex.warmupHtml}</div>
-              </details>
-              <div class="set-header">
-                <span></span>
-                <span>KG</span>
-                <span>REPS</span>
-                <span>RIR</span>
-                <span>TIMER</span>
-              </div>
-              ${setsHtml}
-            </div>
-          </details>`;
+        card.innerHTML = `
+          <div class="exercise-header">
+            <div class="exercise-title">${ex.name}</div>
+            <div class="exercise-meta">${ex.sets} series x ${ex.targetReps}</div>
+          </div>
+          <div class="warmup-box">
+            ${ex.warmupHtml}
+          </div>
+          <table class="sets-table">
+            <thead>
+              <tr>
+                <th>Set</th>
+                <th>Peso</th>
+                <th>Reps</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${setsRowsHtml}
+            </tbody>
+          </table>
+        `;
+        container.appendChild(card);
       });
     }
 
-    function getWorkoutSummary() {
-      const now = new Date();
-      const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
-      let summary = `Entrenamiento realizado (${currentRoutine.toUpperCase()}) - ${dateStr}:\n`;
-      let sessionData = {};
-      let hasData = false;
-
-      routines[currentRoutine].forEach((ex, exIdx) => {
-        let setsData = [];
-        sessionData[ex.name] = [];
-
-        for (let s = 1; s <= ex.sets; s++) {
-          const kg = document.getElementById(`kg_${exIdx}_${s}`)?.value;
-          const reps = document.getElementById(`reps_${exIdx}_${s}`)?.value;
-          const rir = document.getElementById(`rir_${exIdx}_${s}`)?.value;
-
-          if (kg && reps) {
-            hasData = true;
-            setsData.push(`Serie ${s}: ${kg} kg x ${reps} reps (RIR ${rir !== "" ? rir : "N/A"})`);
-            sessionData[ex.name].push({ kg, reps, rir });
-          }
-        }
-        if (setsData.length > 0) {
-          summary += `\n* ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
-        }
+    function switchRoutine(dayKey) {
+      currentDay = dayKey;
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.getAttribute('onclick').includes(dayKey));
       });
-
-      return { summary, sessionData, hasData };
+      renderRoutine(dayKey);
     }
 
-    function copyWorkoutToClipboard() {
-      const { summary, sessionData, hasData } = getWorkoutSummary();
-      if (!hasData) {
-        alert("Introduce al menos una serie antes de copiar.");
-        return;
+    function startRest(seconds, btn) {
+      if (btn) {
+        btn.classList.toggle('completed');
       }
-      
-      localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
-      localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
-      clearDraft();
-      
-      navigator.clipboard.writeText(summary).then(() => {
-        alert("¡Copiado y guardado en el historial! Listo para pegar en el chat.");
-        document.getElementById('history-content').innerText = summary;
-      }).catch(err => {
-        alert("Error al copiar: " + err);
-      });
-    }
+      clearInterval(timerInterval);
+      secondsLeft = seconds;
+      updateTimerDisplay();
 
-    function configureApiKey() {
-      const current = localStorage.getItem('GEMINI_API_KEY') || '';
-      const key = prompt("Pega tu Google AI Studio API Key:", current);
-      if (key !== null) localStorage.setItem('GEMINI_API_KEY', key.trim());
-    }
-
-    async function submitWorkout() {
-      const apiKey = localStorage.getItem('GEMINI_API_KEY');
-      if (!apiKey) {
-        alert("Configura tu API Key usando el botón 'API Key'.");
-        configureApiKey();
-        return;
-      }
-
-      const { summary, sessionData, hasData } = getWorkoutSummary();
-      if (!hasData) {
-        alert("Introduce al menos una serie con peso y repeticiones.");
-        return;
-      }
-
-      const previousSession = localStorage.getItem(`LAST_TEXT_${currentRoutine}`) || "Primera sesión registrada con esta app.";
-      const btn = document.getElementById('btn-submit');
-      const resBox = document.getElementById('response-box');
-      btn.innerText = "Analizando...";
-      document.body.classList.add('loading');
-
-      try {
-        const userPrompt = `SESIÓN ANTERIOR DE REFERENCIA:
-${previousSession}
-
-SESIÓN DE HOY:
-${summary}
-
-Por favor:
-1. Compara rendimiento respecto a la sesión anterior (sobrecarga progresiva lograda o mantenida).
-2. Evalúa series con fallo técnico, descansos o fatiga articular (codo izquierdo y lumbar).
-3. Establece las cargas diana y repeticiones para la siguiente sesión de forma concisa.`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
-            contents: [{ parts: [{ text: userPrompt }] }]
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          resBox.style.background = "#450a0a";
-          resBox.style.border = "1px solid #dc2626";
-          resBox.innerText = `Error de API (${data.error.code}): ${data.error.message}`;
-        } else {
-          localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
-          localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
-          clearDraft();
-          document.getElementById('history-content').innerText = summary;
-
-          resBox.style.background = "#022c22";
-          resBox.style.border = "1px solid #059669";
-          resBox.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió respuesta.";
+      timerInterval = setInterval(() => {
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+          clearInterval(timerInterval);
+          secondsLeft = 0;
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         }
-        resBox.style.display = 'block';
-        resBox.scrollIntoView({ behavior: 'smooth' });
-      } catch (err) {
-        resBox.style.background = "#450a0a";
-        resBox.style.border = "1px solid #dc2626";
-        resBox.innerText = "Error de conexión: " + err.message;
-        resBox.style.display = 'block';
-      } finally {
-        btn.innerText = "Enviar Gemini";
-        document.body.classList.remove('loading');
-      }
+        updateTimerDisplay();
+      }, 1000);
     }
 
-    loadRoutine('push');
-    checkActiveTimerOnLoad();
+    function addSeconds(sec) {
+      secondsLeft += sec;
+      updateTimerDisplay();
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      secondsLeft = 0;
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(secondsLeft / 60);
+      const secs = secondsLeft % 60;
+      document.getElementById('timerDisplay').textContent = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Inicializar día 1 al cargar
+    renderRoutine(currentDay);
   </script>
 </body>
 </html>
