@@ -859,9 +859,43 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
         "Curl predicador barra Z": [{kg: "8.75", reps: "10", rir: "1"}, {kg: "8.75", reps: "9", rir: "1"}, {kg: "8.75", reps: "8", rir: "1"}],
         "Curl Bayesian en polea": [{kg: "7.5", reps: "12", rir: "1"}, {kg: "7.5", reps: "11", rir: "1"}, {kg: "7.5", reps: "10", rir: "0"}]
       };
+
+      const textoPull = `Entrenamiento realizado (PULL) - Sesión Previa:
+
+* Dominadas lastradas [Diana: 8 reps]:
+  - Serie 1: 5 kg x 8 reps (RIR 2)
+  - Serie 2: 5 kg x 8 reps (RIR 2)
+  - Serie 3: 5 kg x 8 reps (RIR 1)
+
+* Remo en T con soporte [Diana: 8 (+ back-off) reps]:
+  - Serie 1: 45 kg x 8 reps (RIR 2)
+  - Serie 2: 45 kg x 8 reps (RIR 2)
+  - Serie 3: 35 kg x 8 reps (RIR 1)
+
+* Rear Delt polea unilateral [Diana: 12-15 reps]:
+  - Serie 1: 7.5 kg x 15 reps (RIR 1)
+  - Serie 2: 7.5 kg x 14 reps (RIR 1)
+  - Serie 3: 7.5 kg x 12 reps (RIR 0)
+
+* Remo en multipower [Diana: 8-10 reps]:
+  - Serie 1: 25 kg x 10 reps (RIR 2)
+  - Serie 2: 25 kg x 9 reps (RIR 1)
+  - Serie 3: 25 kg x 8 reps (RIR 1)
+
+* Curl predicador barra Z [Diana: 8-10 reps]:
+  - Serie 1: 8.75 kg x 10 reps (RIR 1)
+  - Serie 2: 8.75 kg x 9 reps (RIR 1)
+  - Serie 3: 8.75 kg x 8 reps (RIR 1)
+
+* Curl Bayesian en polea [Diana: 10-12 reps]:
+  - Serie 1: 7.5 kg x 12 reps (RIR 1)
+  - Serie 2: 7.5 kg x 11 reps (RIR 1)
+  - Serie 3: 7.5 kg x 10 reps (RIR 0)`;
+
       localStorage.setItem('LAST_SESSION_pull', JSON.stringify(marcasPull));
+      localStorage.setItem('LAST_TEXT_pull', textoPull);
       loadRoutine('pull');
-      alert("¡Marcas base de Pull cargadas en pantalla!");
+      alert("¡Marcas e historial de Pull restaurados!");
     }
 
     function forzarActualizacion() {
