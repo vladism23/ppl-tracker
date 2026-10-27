@@ -316,6 +316,7 @@
 
   <div class="footer-bar">
     <button class="btn-action btn-cfg" onclick="configureApiKey()">API Key</button>
+    <button class="btn-action" style="flex:1; background:#f59e0b; color:#042f2e;" onclick="restaurarPull()">Restaurar Pull</button>
     <button class="btn-action btn-copy" onclick="copyWorkoutToClipboard()">Copiar</button>
     <button class="btn-action btn-send" id="btn-submit" onclick="submitWorkout()">Enviar Gemini</button>
   </div>
@@ -391,32 +392,33 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       pull: [
         {
           name: "Dominadas lastradas",
-          targetReps: "6-8",
+          targetReps: "8",
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x5 solo peso corporal:</b> Descompresión escapular y vascularización. Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 con 50% del lastre previsto:</b> Activación neurológica y agarre. Descanso: 120s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 6-8 reps (RIR 1-2). Depresión escapular estricta antes de flexionar codos.</div>`
+            <span class="warmup-step">1️⃣ <b>Colgado pasivo 15 s + movilidad escapular.</b></span>
+            <span class="warmup-step">2️⃣ <b>4 reps con peso corporal.</b></span>
+            <span class="warmup-step">3️⃣ <b>1 rep con +5 kg.</b></span>
+            <div class="warmup-target">🎯 <b>Efectivas (2.5-3m desc):</b> 3 series x 8 reps con PC + 5 kg. Barbilla superando la barra; bajada frenada en 2-3 s. Cero balanceo. Consolidar 3x8 antes de subir a +6.25 kg.</div>`
         },
         {
           name: "Remo en T con soporte",
-          targetReps: "8-10",
+          targetReps: "8 (+ back-off)",
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 (50% objetivo):</b> Ajuste del cojín esternal (cero carga en lumbares). Descanso: 60s.</span>
-            <span class="warmup-step">2️⃣ <b>1x2 (80% objetivo):</b> Calibración de retracción y straps. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1). Máxima tracción dorsal sin despegar el pecho del apoyo.</div>`
+            <span class="warmup-step">1️⃣ <b>1x5 reps con 25 kg.</b></span>
+            <span class="warmup-step">2️⃣ <b>1x2 reps fluidas con 35 kg.</b></span>
+            <div class="warmup-target">🎯 <b>Efectivas (2.5-3m desc):</b> 45 kg (Back-off: 35 kg). Soporte en mitad del esternón sin hundir el pecho; parada de 1 s atrás. Si S1 toca 10 reps a RIR 1-2, subir a 47.5 kg.</div>`
         },
         {
-          name: "Rear delt polea unilateral",
+          name: "Rear Delt polea unilateral",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Orientar el brazo en el plano escapular (45°). Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Cero retracción trapecial; aislamiento deltoides posterior.</div>`
+            <span class="warmup-step">1️⃣ <b>1x6 reps de toma de contacto con 5 kg.</b></span>
+            <div class="warmup-target">🎯 <b>Efectivas (60-90s desc):</b> Carga base 7.5 kg. Agarre directo de la bola. Iniciar siempre con brazo izquierdo. Nudillos hacia fuera. Añadir parciales al fallar en S3.</div>`
         },
         {
           name: "Remo en multipower",
@@ -424,26 +426,26 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
           sets: 3,
           rest: 180,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x5 moderada con straps:</b> Fijación de bisagra cadera. Descanso: 90s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (3m desc):</b> 3 series x 8-10 reps (RIR 1-2). Tracción dirigida a la cadera/ombligo con espalda neutra.</div>`
+            <span class="warmup-step">1️⃣ <b>1x4 reps de calibración de bisagra con 15 kg/lado.</b></span>
+            <div class="warmup-target">🎯 <b>Efectivas (2.5-3m desc):</b> Carga base 25-27.5 kg/lado. Straps puestos; torso a 45° completamente bloqueado. Codos a la cadera; cero tirones de pierna o lumbar.</div>`
         },
         {
           name: "Curl predicador barra Z",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 120,
+          warmupHtml: `
+            <span class="warmup-step">1️⃣ <b>1x5 reps con barra sola o 5 kg/lado.</b></span>
+            <div class="warmup-target">🎯 <b>Efectivas (90-120s desc):</b> Carga base 8.75 kg/lado. Axilas encajadas; microflexión de seguridad abajo sin hiperextender el codo. Subir a 10 kg/lado cuando S1 alcance 12 reps.</div>`
+        },
+        {
+          name: "Curl Bayesian en polea",
           targetReps: "10-12",
           sets: 3,
           rest: 90,
           warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x8 ligera:</b> Aclimatación bicipital en el banco Scott. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 10-12 reps (RIR 1). Frenar la bajada antes del bloqueo para proteger tendón bicipital.</div>`
-        },
-        {
-          name: "Curl Bayesian en polea",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: `
-            <span class="warmup-step">1️⃣ <b>1x6 ligera:</b> Posicionar el paso adelantado y tensión de estiramiento. Descanso: 45s antes de S1.</span>
-            <div class="warmup-target">🎯 <b>Efectivas (90s desc):</b> 3 series x 12-15 reps (RIR 0-1). Hombro en ligera extensión; tensión continua.</div>`
+            <span class="warmup-step">1️⃣ <b>Directo a efectiva:</b> Bíceps caliente tras predicador.</span>
+            <div class="warmup-target">🎯 <b>Efectivas (60-90s desc):</b> Carga base 7.5 kg/lado. Paso adelante dando la espalda a la torre; codos fijos atrás. Remate en S3 con isometría de 8-10 s abajo en máximo estiramiento.</div>`
         }
       ],
       legs: [
@@ -841,6 +843,20 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
             </div>
           </details>`;
       });
+    }
+
+    function restaurarPull() {
+      const marcasPull = {
+        "Dominadas lastradas": [{kg: "5", reps: "8", rir: "2"}, {kg: "5", reps: "8", rir: "2"}, {kg: "5", reps: "8", rir: "1"}],
+        "Remo en T con soporte": [{kg: "45", reps: "8", rir: "2"}, {kg: "45", reps: "8", rir: "2"}, {kg: "35", reps: "8", rir: "1"}],
+        "Rear Delt polea unilateral": [{kg: "7.5", reps: "15", rir: "1"}, {kg: "7.5", reps: "14", rir: "1"}, {kg: "7.5", reps: "12", rir: "0"}],
+        "Remo en multipower": [{kg: "25", reps: "10", rir: "2"}, {kg: "25", reps: "9", rir: "1"}, {kg: "25", reps: "8", rir: "1"}],
+        "Curl predicador barra Z": [{kg: "8.75", reps: "10", rir: "1"}, {kg: "8.75", reps: "9", rir: "1"}, {kg: "8.75", reps: "8", rir: "1"}],
+        "Curl Bayesian en polea": [{kg: "7.5", reps: "12", rir: "1"}, {kg: "7.5", reps: "11", rir: "1"}, {kg: "7.5", reps: "10", rir: "0"}]
+      };
+      localStorage.setItem('LAST_SESSION_pull', JSON.stringify(marcasPull));
+      loadRoutine('pull');
+      alert("¡Marcas base de Pull cargadas en pantalla!");
     }
 
     function getWorkoutSummary() {
