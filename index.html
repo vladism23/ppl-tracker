@@ -6,6 +6,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f172a">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>PPL Minimal Tracker</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -265,6 +268,7 @@
     .footer-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #334155; padding: 10px 14px; display: flex; gap: 8px; z-index: 100; }
     .btn-action { border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; padding: 11px; cursor: pointer; }
     .btn-cfg { flex: 1; background: #334155; color: #f8fafc; }
+    .btn-reload { flex: 0.6; background: #1e293b; color: #38bdf8; border: 1px solid #334155; font-size: 1.1rem; }
     .btn-copy { flex: 1.2; background: #475569; color: #f8fafc; }
     .btn-send { flex: 2; background: #10b981; color: #042f2e; }
 
@@ -315,6 +319,7 @@
   <div id="response-box"></div>
 
   <div class="footer-bar">
+    <button class="btn-action btn-reload" onclick="forzarActualizacion()" title="Actualizar app">🔄</button>
     <button class="btn-action btn-cfg" onclick="configureApiKey()">API Key</button>
     <button class="btn-action" style="flex:1; background:#f59e0b; color:#042f2e;" onclick="restaurarPull()">Restaurar Pull</button>
     <button class="btn-action btn-copy" onclick="copyWorkoutToClipboard()">Copiar</button>
@@ -857,6 +862,15 @@ Evalúa sobrecarga progresiva estricta respecto a la sesión previa.`;
       localStorage.setItem('LAST_SESSION_pull', JSON.stringify(marcasPull));
       loadRoutine('pull');
       alert("¡Marcas base de Pull cargadas en pantalla!");
+    }
+
+    function forzarActualizacion() {
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+      window.location.href = window.location.pathname + '?v=' + Date.now();
     }
 
     function getWorkoutSummary() {
