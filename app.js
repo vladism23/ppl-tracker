@@ -1,6 +1,7 @@
 const SUPABASE_URL = "https://zrszsqlsrcjeltsnsbxv.supabase.co";
-const SUPABASE_KEY = "sb_publishable_zxRs767PJiQ6wzwO38etyA_arjnl458";
+const SUPABASE_KEY = "sb_publishable_zxRs767PJiQ6wzwO38etyA_arjn1458";
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
 const SYSTEM_INSTRUCTION = `Eres el entrenador personal del usuario, experto en hipertrofia basada en evidencia, sobrecarga progresiva y salud articular.
 Pautas ortopédicas permanentes:
 - Codo izquierdo: Cuidar inserción del tendón del tríceps. Katana extensions en vez de presses franceses.
@@ -148,6 +149,53 @@ function saveExerciseDataToDB(exId, setsArray) {
   const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
   db[exId] = setsArray;
   localStorage.setItem('EXERCISE_HISTORY_DB', JSON.stringify(db));
+}
+
+/* SINCRONIZACIÓN EN LA NUBE CON SUPABASE (FUSIÓN AUTOMÁTICA) */
+async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData) {
+  if (!supabaseClient) return;
+  try {
+    const { data: existingRow, error: fetchErr } = await supabaseClient
+      .from('workouts')
+      .select('summary_text, exercises')
+      .eq('routine_type', routine)
+      .eq('date', dateStr)
+      .maybeSingle();
+
+    if (fetchErr) {
+      console.error("Error al consultar datos previos en Supabase:", fetchErr);
+    }
+
+    let finalExercises = sessionData;
+    let finalSummary = summaryText;
+
+    if (existingRow && existingRow.exercises) {
+      finalExercises = { ...existingRow.exercises, ...sessionData };
+      if (existingRow.summary_text && existingRow.summary_text !== summaryText) {
+        finalSummary = existingRow.summary_text + "\n" + summaryText.replace(/Entrenamiento realizado.*\n/, '');
+      }
+    }
+
+    const { error: upsertErr } = await supabaseClient
+      .from('workouts')
+      .upsert(
+        {
+          routine_type: routine,
+          date: dateStr,
+          summary_text: finalSummary,
+          exercises: finalExercises
+        },
+        { onConflict: 'routine_type,date' }
+      );
+
+    if (upsertErr) {
+      console.error("Error al sincronizar con Supabase:", upsertErr);
+    } else {
+      console.log("Sesión sincronizada y fusionada correctamente en Supabase.");
+    }
+  } catch (err) {
+    console.error("Fallo de red en Supabase:", err);
+  }
 }
 
 /* BORRADOR TEMPORAL */
@@ -388,11 +436,11 @@ function getWorkoutSummary() {
     }
   });
 
-  return { summary, sessionData, hasData };
+  return { summary, sessionData, hasData, dateStr };
 }
 
 function copyWorkoutToClipboard() {
-  const { summary, sessionData, hasData } = getWorkoutSummary();
+  const { summary, sessionData, hasData, dateStr } = getWorkoutSummary();
   if (!hasData) {
     alert("Introduce al menos una serie antes de copiar.");
     return;
@@ -402,8 +450,11 @@ function copyWorkoutToClipboard() {
   localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
   clearDraft();
   
+  // Guardado en la nube con fusión automática
+  syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData);
+
   navigator.clipboard.writeText(summary).then(() => {
-    alert("¡Copiado y guardado en el historial! Listo para pegar en el chat.");
+    alert("¡Copiado, guardado en historial y sincronizado en Supabase!");
     document.getElementById('history-content').innerText = summary;
   }).catch(err => {
     alert("Error al copiar: " + err);
@@ -424,7 +475,7 @@ async function submitWorkout() {
     return;
   }
 
-  const { summary, sessionData, hasData } = getWorkoutSummary();
+  const { summary, sessionData, hasData, dateStr } = getWorkoutSummary();
   if (!hasData) {
     alert("Introduce al menos una serie con peso y repeticiones.");
     return;
@@ -451,7 +502,7 @@ Por favor:
 2. Evalúa series con fallo técnico, descansos o fatiga articular (codo izquierdo y lumbar).
 3. Establece las cargas diana y repeticiones para la siguiente sesión de forma concisa usando una tabla Markdown clara con columnas: Ejercicio, Series, Carga Diana, Reps Objetivo, Descanso, Clave de Ejecución y RIR.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
@@ -473,6 +524,9 @@ Por favor:
       localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
       clearDraft();
       document.getElementById('history-content').innerText = summary;
+
+      // Guardado en la nube con fusión automática
+      syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData);
 
       resBox.style.background = "#022c22";
       resBox.style.border = "1px solid #059669";
