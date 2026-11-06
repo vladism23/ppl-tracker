@@ -1,3 +1,6 @@
+const SUPABASE_URL = "https://zrszsqlsrcjeltsnsbxv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_zxRs767PJiQ6wzwO38etyA_arjnl458";
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const SYSTEM_INSTRUCTION = `Eres el entrenador personal del usuario, experto en hipertrofia basada en evidencia, sobrecarga progresiva y salud articular.
 Pautas ortopédicas permanentes:
 - Codo izquierdo: Cuidar inserción del tendón del tríceps. Katana extensions en vez de presses franceses.
