@@ -13,7 +13,7 @@ let currentRoutine = 'push';
 let timerInterval = null;
 let hasAlertedOvertime = false;
 
-// Memoria en RAM alimentada desde Supabase
+// Memoria en RAM alimentada desde Supabase y localStorage
 let cloudHistoryCache = {};
 
 function playBeep() {
@@ -40,8 +40,10 @@ function setTimerDirect(seconds) {
   localStorage.setItem('TIMER_TARGET_MS', targetTime.toString());
 
   const banner = document.getElementById('timer-banner');
-  banner.classList.remove('overtime');
-  banner.style.display = 'flex';
+  if (banner) {
+    banner.classList.remove('overtime');
+    banner.style.display = 'flex';
+  }
   
   tickTimer();
   timerInterval = setInterval(tickTimer, 500);
@@ -53,19 +55,19 @@ function startTimer(seconds) {
 
 function tickTimer() {
   const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
+  const banner = document.getElementById('timer-banner');
   if (!storedTarget) {
     clearInterval(timerInterval);
-    document.getElementById('timer-banner').style.display = 'none';
+    if (banner) banner.style.display = 'none';
     document.title = "PPL Minimal Tracker";
     return;
   }
 
   const diffMs = parseInt(storedTarget, 10) - Date.now();
   const diffSec = Math.floor(diffMs / 1000);
-  const banner = document.getElementById('timer-banner');
 
   if (diffSec < 0) {
-    banner.classList.add('overtime');
+    if (banner) banner.classList.add('overtime');
     if (!hasAlertedOvertime) {
       playBeep();
       if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
@@ -73,7 +75,7 @@ function tickTimer() {
     }
     renderTimerDisplay(diffSec, true);
   } else {
-    banner.classList.remove('overtime');
+    if (banner) banner.classList.remove('overtime');
     renderTimerDisplay(diffSec, false);
   }
 }
@@ -85,7 +87,8 @@ function addTimerTime(sec) {
   localStorage.setItem('TIMER_TARGET_MS', newTarget.toString());
   
   hasAlertedOvertime = false;
-  document.getElementById('timer-banner').style.display = 'flex';
+  const banner = document.getElementById('timer-banner');
+  if (banner) banner.style.display = 'flex';
   clearInterval(timerInterval);
   tickTimer();
   timerInterval = setInterval(tickTimer, 500);
@@ -95,8 +98,10 @@ function stopTimer() {
   clearInterval(timerInterval);
   localStorage.removeItem('TIMER_TARGET_MS');
   const banner = document.getElementById('timer-banner');
-  banner.classList.remove('overtime');
-  banner.style.display = 'none';
+  if (banner) {
+    banner.classList.remove('overtime');
+    banner.style.display = 'none';
+  }
   document.title = "PPL Minimal Tracker";
 }
 
@@ -107,14 +112,16 @@ function renderTimerDisplay(totalSeconds, isNegative) {
   const prefix = isNegative ? "-" : "";
   const formatted = `${prefix}${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   
-  document.getElementById('timer-display').innerText = formatted;
+  const display = document.getElementById('timer-display');
+  if (display) display.innerText = formatted;
   document.title = `(${formatted}) PPL Tracker`;
 }
 
 function checkActiveTimerOnLoad() {
   const storedTarget = localStorage.getItem('TIMER_TARGET_MS');
   if (storedTarget) {
-    document.getElementById('timer-banner').style.display = 'flex';
+    const banner = document.getElementById('timer-banner');
+    if (banner) banner.style.display = 'flex';
     tickTimer();
     clearInterval(timerInterval);
     timerInterval = setInterval(tickTimer, 500);
@@ -133,7 +140,7 @@ async function fetchLatestWorkoutFromCloud(routine) {
       .from('workouts')
       .select('date, summary_text, exercises, ai_feedback')
       .eq('routine_type', routine)
-      .order('created_at', { ascending: false })
+      .order('date', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -148,17 +155,27 @@ async function fetchLatestWorkoutFromCloud(routine) {
   }
 }
 
-/* BUSCADOR DE EJERCICIOS EN LA MEMORIA CARGADA DESDE LA NUBE */
+/* BUSCADOR DE EJERCICIOS EN MEMORIA Y FALLBACK LOCAL */
 function getHistoricalExerciseData(exId, exName) {
-  // 1. Busca por clave de ID exacta en el caché de la nube
-  if (cloudHistoryCache[exId]) {
+  // 1. En caché descargado de Supabase
+  if (cloudHistoryCache[exId] && cloudHistoryCache[exId].length > 0) {
     return cloudHistoryCache[exId];
   }
-  // 2. Busca por coincidencia de nombre
-  const foundKey = Object.keys(cloudHistoryCache).find(k => k.trim().toLowerCase() === exName.trim().toLowerCase());
-  if (foundKey && cloudHistoryCache[foundKey]) {
-    return cloudHistoryCache[foundKey];
+  const foundCloudKey = Object.keys(cloudHistoryCache).find(k => k.trim().toLowerCase() === exName.trim().toLowerCase());
+  if (foundCloudKey && cloudHistoryCache[foundCloudKey]) {
+    return cloudHistoryCache[foundCloudKey];
   }
+
+  // 2. Fallback a base local en caso de estar offline o primer arranque
+  const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
+  if (db[exId] && db[exId].length > 0) {
+    return db[exId];
+  }
+  const foundLocalKey = Object.keys(db).find(k => k.trim().toLowerCase() === exName.trim().toLowerCase());
+  if (foundLocalKey && db[foundLocalKey]) {
+    return db[foundLocalKey];
+  }
+
   return null;
 }
 
@@ -174,7 +191,7 @@ function generateDynamicWarmupHtml(ex, prevSets) {
 
   if (!lastMaxKg) {
     return `
-      <div style="color: #94a3b8; font-size: 0.85em; margin-bottom: 8px;">ℹ️ Sin registros previos en la nube. Aproximaciones progresivas estándar.</div>
+      <div style="color: #94a3b8; font-size: 0.85em; margin-bottom: 8px;">ℹ️ Sin registros previos. Aproximaciones progresivas estándar.</div>
       ${ex.warmupHtml || ''}`;
   }
 
@@ -256,6 +273,7 @@ async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, ai
 
 /* BORRADOR INMEDIATO */
 function saveDraft() {
+  if (typeof routineSlots === 'undefined' || !routineSlots[currentRoutine]) return;
   let draft = {};
   const slots = routineSlots[currentRoutine];
   slots.forEach((slot) => {
@@ -284,7 +302,13 @@ function onVariantChanged(slotId, newVariantId) {
 /* RENDERIZADO VISUAL */
 function renderRoutineUI(type) {
   const container = document.getElementById('exercise-list');
+  if (!container) return;
   container.innerHTML = '';
+
+  if (typeof routineSlots === 'undefined' || !routineSlots[type]) {
+    container.innerHTML = `<div style="padding: 20px; color: #ef4444;">Error: No se encontró la rutina '${type}' en routines.js. Verifica que routines.js esté cargado.</div>`;
+    return;
+  }
 
   const draftV2 = JSON.parse(localStorage.getItem(`DRAFT_V2_${type}`) || '{}');
   const slots = routineSlots[type];
@@ -372,7 +396,7 @@ function renderRoutineUI(type) {
   });
 }
 
-/* CARGA ASÍNCRONA DE LA RUTINA DESDE SUPABASE */
+/* CARGA ASÍNCRONA ROBUSTA DESDE SUPABASE */
 async function loadRoutine(type) {
   currentRoutine = type;
   const selector = document.getElementById('routine-selector');
@@ -380,30 +404,42 @@ async function loadRoutine(type) {
 
   const historyContentEl = document.getElementById('history-content');
   const resBox = document.getElementById('response-box');
-  historyContentEl.innerText = "Cargando histórico desde Supabase...";
-  resBox.style.display = 'none';
+  if (resBox) resBox.style.display = 'none';
 
-  // 1. Descargar los datos más recientes de Supabase para este día
-  const cloudRecord = await fetchLatestWorkoutFromCloud(type);
-
-  if (cloudRecord) {
-    cloudHistoryCache = cloudRecord.exercises || {};
-    historyContentEl.innerText = cloudRecord.summary_text || `Sesión anterior registrada el ${cloudRecord.date}`;
-    
-    // Si la sesión anterior tenía feedback de Gemini, lo mostramos
-    if (cloudRecord.ai_feedback) {
-      resBox.innerText = `🤖 OBJETIVOS DEL ENTRENADOR (Semana anterior):\n\n${cloudRecord.ai_feedback}`;
-      resBox.style.background = "#022c22";
-      resBox.style.border = "1px solid #059669";
-      resBox.style.display = 'block';
-    }
-  } else {
-    cloudHistoryCache = {};
-    historyContentEl.innerText = "No hay registros previos en Supabase para este día.";
-  }
-
-  // 2. Renderizar interfaz con las marcas de la nube
+  // 1. Renderizado INMEDIATO (la pantalla nunca queda vacía)
   renderRoutineUI(type);
+
+  if (historyContentEl) historyContentEl.innerText = "Cargando datos previos desde Supabase...";
+
+  // 2. Consulta asíncrona a Supabase en segundo plano
+  try {
+    const cloudRecord = await fetchLatestWorkoutFromCloud(type);
+
+    if (cloudRecord) {
+      cloudHistoryCache = cloudRecord.exercises || {};
+      if (historyContentEl) {
+        historyContentEl.innerText = cloudRecord.summary_text || `Sesión anterior registrada el ${cloudRecord.date}`;
+      }
+      
+      if (cloudRecord.ai_feedback && resBox) {
+        resBox.innerText = `🤖 OBJETIVOS DEL ENTRENADOR (Semana anterior):\n\n${cloudRecord.ai_feedback}`;
+        resBox.style.background = "#022c22";
+        resBox.style.border = "1px solid #059669";
+        resBox.style.display = 'block';
+      }
+
+      // Re-renderizamos para actualizar placeholders con datos frescos de la nube
+      renderRoutineUI(type);
+    } else {
+      cloudHistoryCache = {};
+      if (historyContentEl) {
+        historyContentEl.innerText = "No hay registros previos en Supabase para este día.";
+      }
+    }
+  } catch (err) {
+    console.warn("No se pudo conectar con Supabase en este momento:", err);
+    if (historyContentEl) historyContentEl.innerText = "Modo sin conexión. Datos locales activos.";
+  }
 }
 
 function forzarActualizacion() {
@@ -444,9 +480,13 @@ function getWorkoutSummary() {
     }
     if (setsData.length > 0) {
       summary += `\n* ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
-      // Guardamos tanto por ID como por nombre para máxima compatibilidad
       sessionData[ex.id] = exerciseSets;
       sessionData[ex.name] = exerciseSets;
+      
+      // Guardado local de seguridad
+      const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
+      db[ex.id] = exerciseSets;
+      localStorage.setItem('EXERCISE_HISTORY_DB', JSON.stringify(db));
     }
   });
 
@@ -465,7 +505,8 @@ function copyWorkoutToClipboard() {
 
   navigator.clipboard.writeText(summary).then(() => {
     alert("¡Copiado y sincronizado en Supabase!");
-    document.getElementById('history-content').innerText = summary;
+    const historyContent = document.getElementById('history-content');
+    if (historyContent) historyContent.innerText = summary;
   }).catch(err => {
     alert("Error al copiar: " + err);
   });
@@ -491,10 +532,11 @@ async function submitWorkout() {
     return;
   }
 
-  const previousSession = document.getElementById('history-content').innerText;
+  const historyContent = document.getElementById('history-content');
+  const previousSession = historyContent ? historyContent.innerText : "Sin registros previos.";
   const btn = document.getElementById('btn-submit');
   const resBox = document.getElementById('response-box');
-  btn.innerText = "Analizando...";
+  if (btn) btn.innerText = "Analizando...";
   document.body.classList.add('loading');
 
   const controller = new AbortController();
@@ -526,35 +568,42 @@ Por favor:
     const data = await response.json();
 
     if (data.error) {
-      resBox.style.background = "#450a0a";
-      resBox.style.border = "1px solid #dc2626";
-      resBox.innerText = `Error de API (${data.error.code}): ${data.error.message}`;
+      if (resBox) {
+        resBox.style.background = "#450a0a";
+        resBox.style.border = "1px solid #dc2626";
+        resBox.innerText = `Error de API (${data.error.code}): ${data.error.message}`;
+      }
     } else {
       clearDraft();
       const feedbackText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió respuesta.";
       
-      // Sincronización completa con el análisis de la IA en la nube
       syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData, feedbackText);
 
-      document.getElementById('history-content').innerText = summary;
-      resBox.style.background = "#022c22";
-      resBox.style.border = "1px solid #059669";
-      resBox.innerText = feedbackText;
+      if (historyContent) historyContent.innerText = summary;
+      if (resBox) {
+        resBox.style.background = "#022c22";
+        resBox.style.border = "1px solid #059669";
+        resBox.innerText = feedbackText;
+      }
     }
-    resBox.style.display = 'block';
-    resBox.scrollIntoView({ behavior: 'smooth' });
+    if (resBox) {
+      resBox.style.display = 'block';
+      resBox.scrollIntoView({ behavior: 'smooth' });
+    }
   } catch (err) {
     clearTimeout(timeoutId);
-    resBox.style.background = "#450a0a";
-    resBox.style.border = "1px solid #dc2626";
-    if (err.name === 'AbortError') {
-      resBox.innerText = "Tiempo de espera agotado (15s). La API de Google está saturada en este momento. Dale a 'Copiar' y pega el entreno en este chat.";
-    } else {
-      resBox.innerText = "Error de conexión: " + err.message;
+    if (resBox) {
+      resBox.style.background = "#450a0a";
+      resBox.style.border = "1px solid #dc2626";
+      if (err.name === 'AbortError') {
+        resBox.innerText = "Tiempo de espera agotado (15s). La API de Google está saturada en este momento. Dale a 'Copiar' y pega el entreno en este chat.";
+      } else {
+        resBox.innerText = "Error de conexión: " + err.message;
+      }
+      resBox.style.display = 'block';
     }
-    resBox.style.display = 'block';
   } finally {
-    btn.innerText = "Enviar Gemini";
+    if (btn) btn.innerText = "Enviar Gemini";
     document.body.classList.remove('loading');
   }
 }
