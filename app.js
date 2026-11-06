@@ -13,6 +13,9 @@ let currentRoutine = 'push';
 let timerInterval = null;
 let hasAlertedOvertime = false;
 
+// Memoria en RAM alimentada desde Supabase
+let cloudHistoryCache = {};
+
 function playBeep() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -119,86 +122,139 @@ function checkActiveTimerOnLoad() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    checkActiveTimerOnLoad();
-  }
+  if (!document.hidden) checkActiveTimerOnLoad();
 });
 
-/* BASE DE DATOS LOCAL Y MIGRACIÓN AUTOMÁTICA POR ID */
-function getHistoricalExerciseData(exId, exName) {
-  const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
-  if (db[exId] && db[exId].length > 0) {
-    return db[exId];
-  }
+/* OBTENER HISTÓRICO DIRECTAMENTE DE SUPABASE */
+async function fetchLatestWorkoutFromCloud(routine) {
+  if (!supabaseClient) return null;
+  try {
+    const { data, error } = await supabaseClient
+      .from('workouts')
+      .select('date, summary_text, exercises, ai_feedback')
+      .eq('routine_type', routine)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  const routinesList = ['push', 'pull', 'legs', 'repaso', 'dia5'];
-  for (const rType of routinesList) {
-    const oldSession = JSON.parse(localStorage.getItem(`LAST_SESSION_${rType}`) || '{}');
-    const foundKey = Object.keys(oldSession).find(k => k.trim().toLowerCase() === exName.trim().toLowerCase());
-    if (foundKey && oldSession[foundKey] && oldSession[foundKey].length > 0) {
-      db[exId] = oldSession[foundKey];
-      localStorage.setItem('EXERCISE_HISTORY_DB', JSON.stringify(db));
-      return db[exId];
+    if (error) {
+      console.error("Error al consultar Supabase:", error);
+      return null;
     }
+    return data;
+  } catch (err) {
+    console.error("Fallo de conexión:", err);
+    return null;
   }
+}
 
+/* BUSCADOR DE EJERCICIOS EN LA MEMORIA CARGADA DESDE LA NUBE */
+function getHistoricalExerciseData(exId, exName) {
+  // 1. Busca por clave de ID exacta en el caché de la nube
+  if (cloudHistoryCache[exId]) {
+    return cloudHistoryCache[exId];
+  }
+  // 2. Busca por coincidencia de nombre
+  const foundKey = Object.keys(cloudHistoryCache).find(k => k.trim().toLowerCase() === exName.trim().toLowerCase());
+  if (foundKey && cloudHistoryCache[foundKey]) {
+    return cloudHistoryCache[foundKey];
+  }
   return null;
 }
 
-function saveExerciseDataToDB(exId, setsArray) {
-  const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
-  db[exId] = setsArray;
-  localStorage.setItem('EXERCISE_HISTORY_DB', JSON.stringify(db));
+/* CÁLCULO DINÁMICO DE APROXIMACIONES Y CARGA DIANA */
+function generateDynamicWarmupHtml(ex, prevSets) {
+  let lastMaxKg = null;
+  if (prevSets && prevSets.length > 0) {
+    const validWeights = prevSets.map(s => parseFloat(s.kg)).filter(w => !isNaN(w) && w > 0);
+    if (validWeights.length > 0) {
+      lastMaxKg = Math.max(...validWeights);
+    }
+  }
+
+  if (!lastMaxKg) {
+    return `
+      <div style="color: #94a3b8; font-size: 0.85em; margin-bottom: 8px;">ℹ️ Sin registros previos en la nube. Aproximaciones progresivas estándar.</div>
+      ${ex.warmupHtml || ''}`;
+  }
+
+  const isBarbell = ex.id.includes("libre") || ex.id.includes("guiada") || ex.id.includes("barra");
+  const isDumbbell = ex.id.includes("mancuerna") || ex.id.includes("db");
+
+  const roundWeight = (kg) => {
+    if (isDumbbell) return Math.round(kg / 2) * 2;
+    if (isBarbell) return Math.round(kg / 2.5) * 2.5;
+    return Math.round(kg / 2.5) * 2.5;
+  };
+
+  const w50 = roundWeight(lastMaxKg * 0.50);
+  const w70 = roundWeight(lastMaxKg * 0.70);
+  const w85 = roundWeight(lastMaxKg * 0.85);
+  const targetNext = roundWeight(lastMaxKg * 1.025);
+
+  return `
+    <div style="background: rgba(15, 23, 42, 0.6); padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #334155; font-size: 0.88em; line-height: 1.45;">
+      <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">
+        🎯 Carga Diana (Base anterior: ${lastMaxKg} kg): ${lastMaxKg === targetNext ? `${lastMaxKg} kg` : `${lastMaxKg} - ${targetNext} kg`}
+      </div>
+      <div style="color: #cbd5e1;">
+        <span style="color: #94a3b8; font-weight: 600;">Aproximaciones:</span><br>
+        • Serie 1: <b>${w50} kg</b> x 8 reps (50%)<br>
+        • Serie 2: <b>${w70} kg</b> x 4 reps (70%)<br>
+        • Serie 3: <b>${w85} kg</b> x 1-2 reps (85%)
+      </div>
+    </div>
+    ${ex.warmupHtml || ''}`;
 }
 
-/* SINCRONIZACIÓN EN LA NUBE CON SUPABASE (FUSIÓN AUTOMÁTICA) */
-async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData) {
+/* SINCRONIZACIÓN EN SUPABASE (FUSIÓN AUTOMÁTICA) */
+async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, aiFeedback = null) {
   if (!supabaseClient) return;
   try {
-    const { data: existingRow, error: fetchErr } = await supabaseClient
+    const { data: existingRow } = await supabaseClient
       .from('workouts')
-      .select('summary_text, exercises')
+      .select('summary_text, exercises, ai_feedback')
       .eq('routine_type', routine)
       .eq('date', dateStr)
       .maybeSingle();
 
-    if (fetchErr) {
-      console.error("Error al consultar datos previos en Supabase:", fetchErr);
-    }
-
     let finalExercises = sessionData;
     let finalSummary = summaryText;
+    let finalFeedback = aiFeedback;
 
     if (existingRow && existingRow.exercises) {
       finalExercises = { ...existingRow.exercises, ...sessionData };
       if (existingRow.summary_text && existingRow.summary_text !== summaryText) {
         finalSummary = existingRow.summary_text + "\n" + summaryText.replace(/Entrenamiento realizado.*\n/, '');
       }
+      if (!finalFeedback && existingRow.ai_feedback) {
+        finalFeedback = existingRow.ai_feedback;
+      }
     }
+
+    const payload = {
+      routine_type: routine,
+      date: dateStr,
+      summary_text: finalSummary,
+      exercises: finalExercises
+    };
+    if (finalFeedback) payload.ai_feedback = finalFeedback;
 
     const { error: upsertErr } = await supabaseClient
       .from('workouts')
-      .upsert(
-        {
-          routine_type: routine,
-          date: dateStr,
-          summary_text: finalSummary,
-          exercises: finalExercises
-        },
-        { onConflict: 'routine_type,date' }
-      );
+      .upsert(payload, { onConflict: 'routine_type,date' });
 
     if (upsertErr) {
       console.error("Error al sincronizar con Supabase:", upsertErr);
     } else {
-      console.log("Sesión sincronizada y fusionada correctamente en Supabase.");
+      console.log("Datos sincronizados en la nube (Supabase).");
     }
   } catch (err) {
     console.error("Fallo de red en Supabase:", err);
   }
 }
 
-/* BORRADOR TEMPORAL */
+/* BORRADOR INMEDIATO */
 function saveDraft() {
   let draft = {};
   const slots = routineSlots[currentRoutine];
@@ -210,9 +266,7 @@ function saveDraft() {
       const kg = document.getElementById(`kg_${slot.slotId}_${s}`)?.value || '';
       const reps = document.getElementById(`reps_${slot.slotId}_${s}`)?.value || '';
       const rir = document.getElementById(`rir_${slot.slotId}_${s}`)?.value || '';
-      if (kg || reps || rir) {
-        draft[ex.id][s] = { kg, reps, rir };
-      }
+      if (kg || reps || rir) draft[ex.id][s] = { kg, reps, rir };
     }
   });
   localStorage.setItem(`DRAFT_V2_${currentRoutine}`, JSON.stringify(draft));
@@ -220,33 +274,17 @@ function saveDraft() {
 
 function clearDraft() {
   localStorage.removeItem(`DRAFT_V2_${currentRoutine}`);
-  localStorage.removeItem(`DRAFT_${currentRoutine}`);
 }
 
 function onVariantChanged(slotId, newVariantId) {
   localStorage.setItem(`ACTIVE_VARIANT_${slotId}`, newVariantId);
-  loadRoutine(currentRoutine);
+  renderRoutineUI(currentRoutine);
 }
 
-/* RENDERIZADO DE RUTINA */
-function loadRoutine(type) {
-  currentRoutine = type;
-  const selector = document.getElementById('routine-selector');
-  if (selector && selector.value !== type) {
-    selector.value = type;
-  }
-
+/* RENDERIZADO VISUAL */
+function renderRoutineUI(type) {
   const container = document.getElementById('exercise-list');
   container.innerHTML = '';
-  document.getElementById('response-box').style.display = 'none';
-
-  const rawTextHistory = localStorage.getItem(`LAST_TEXT_${type}`);
-  const historyContentEl = document.getElementById('history-content');
-  if (rawTextHistory) {
-    historyContentEl.innerText = rawTextHistory;
-  } else {
-    historyContentEl.innerText = "No hay registros previos guardados para este día.";
-  }
 
   const draftV2 = JSON.parse(localStorage.getItem(`DRAFT_V2_${type}`) || '{}');
   const slots = routineSlots[type];
@@ -285,7 +323,6 @@ function loadRoutine(type) {
     }
 
     const restLabel = ex.rest >= 120 ? `${ex.rest / 60}m` : `${ex.rest}s`;
-    
     const prevBannerHtml = previousSetsSummary.length > 0 
       ? `<div class="prev-performance-banner">⏮️ <b>Anterior:</b> ${previousSetsSummary.join(' | ')}</div>` 
       : '';
@@ -319,8 +356,8 @@ function loadRoutine(type) {
           ${variantSelectHtml}
           ${prevBannerHtml}
           <details class="warmup-details">
-            <summary>Calentamiento / Objetivos / Claves</summary>
-            <div class="warmup-content">${ex.warmupHtml}</div>
+            <summary>Calentamiento / Pesos Diana</summary>
+            <div class="warmup-content">${generateDynamicWarmupHtml(ex, prevSets)}</div>
           </details>
           <div class="set-header">
             <span></span>
@@ -335,64 +372,40 @@ function loadRoutine(type) {
   });
 }
 
-/* BOTÓN DE EMERGENCIA: PULL */
-function restaurarPull() {
-  const marcasPull = {
-    "Dominadas lastradas": [{kg: "5", reps: "8", rir: "2"}, {kg: "5", reps: "8", rir: "2"}, {kg: "5", reps: "8", rir: "1"}],
-    "Remo en T con soporte": [{kg: "45", reps: "8", rir: "2"}, {kg: "45", reps: "8", rir: "2"}, {kg: "35", reps: "8", rir: "1"}],
-    "Rear Delt polea unilateral": [{kg: "7.5", reps: "15", rir: "1"}, {kg: "7.5", reps: "14", rir: "1"}, {kg: "7.5", reps: "12", rir: "0"}],
-    "Remo en multipower": [{kg: "25", reps: "10", rir: "2"}, {kg: "25", reps: "9", rir: "1"}, {kg: "25", reps: "8", rir: "1"}],
-    "Curl predicador barra Z": [{kg: "8.75", reps: "10", rir: "1"}, {kg: "8.75", reps: "9", rir: "1"}, {kg: "8.75", reps: "8", rir: "1"}],
-    "Curl Bayesian en polea": [{kg: "7.5", reps: "12", rir: "1"}, {kg: "7.5", reps: "11", rir: "1"}, {kg: "7.5", reps: "10", rir: "0"}]
-  };
+/* CARGA ASÍNCRONA DE LA RUTINA DESDE SUPABASE */
+async function loadRoutine(type) {
+  currentRoutine = type;
+  const selector = document.getElementById('routine-selector');
+  if (selector && selector.value !== type) selector.value = type;
 
-  const textoPull = `Entrenamiento realizado (PULL) - Sesión Previa:
+  const historyContentEl = document.getElementById('history-content');
+  const resBox = document.getElementById('response-box');
+  historyContentEl.innerText = "Cargando histórico desde Supabase...";
+  resBox.style.display = 'none';
 
-* Dominadas lastradas [Diana: 8 reps]:
-  - Serie 1: 5 kg x 8 reps (RIR 2)
-  - Serie 2: 5 kg x 8 reps (RIR 2)
-  - Serie 3: 5 kg x 8 reps (RIR 1)
+  // 1. Descargar los datos más recientes de Supabase para este día
+  const cloudRecord = await fetchLatestWorkoutFromCloud(type);
 
-* Remo en T con soporte [Diana: 8 (+ back-off) reps]:
-  - Serie 1: 45 kg x 8 reps (RIR 2)
-  - Serie 2: 45 kg x 8 reps (RIR 2)
-  - Serie 3: 35 kg x 8 reps (RIR 1)
+  if (cloudRecord) {
+    cloudHistoryCache = cloudRecord.exercises || {};
+    historyContentEl.innerText = cloudRecord.summary_text || `Sesión anterior registrada el ${cloudRecord.date}`;
+    
+    // Si la sesión anterior tenía feedback de Gemini, lo mostramos
+    if (cloudRecord.ai_feedback) {
+      resBox.innerText = `🤖 OBJETIVOS DEL ENTRENADOR (Semana anterior):\n\n${cloudRecord.ai_feedback}`;
+      resBox.style.background = "#022c22";
+      resBox.style.border = "1px solid #059669";
+      resBox.style.display = 'block';
+    }
+  } else {
+    cloudHistoryCache = {};
+    historyContentEl.innerText = "No hay registros previos en Supabase para este día.";
+  }
 
-* Rear Delt polea unilateral [Diana: 12-15 reps]:
-  - Serie 1: 7.5 kg x 15 reps (RIR 1)
-  - Serie 2: 7.5 kg x 14 reps (RIR 1)
-  - Serie 3: 7.5 kg x 12 reps (RIR 0)
-
-* Remo en multipower [Diana: 8-10 reps]:
-  - Serie 1: 25 kg x 10 reps (RIR 2)
-  - Serie 2: 25 kg x 9 reps (RIR 1)
-  - Serie 3: 25 kg x 8 reps (RIR 1)
-
-* Curl predicador barra Z [Diana: 8-10 reps]:
-  - Serie 1: 8.75 kg x 10 reps (RIR 1)
-  - Serie 2: 8.75 kg x 9 reps (RIR 1)
-  - Serie 3: 8.75 kg x 8 reps (RIR 1)
-
-* Curl Bayesian en polea [Diana: 10-12 reps]:
-  - Serie 1: 7.5 kg x 12 reps (RIR 1)
-  - Serie 2: 7.5 kg x 11 reps (RIR 1)
-  - Serie 3: 7.5 kg x 10 reps (RIR 0)`;
-
-  localStorage.setItem('LAST_SESSION_pull', JSON.stringify(marcasPull));
-  localStorage.setItem('LAST_TEXT_pull', textoPull);
-
-  saveExerciseDataToDB("pullup_weighted", marcasPull["Dominadas lastradas"]);
-  saveExerciseDataToDB("tbar_support", marcasPull["Remo en T con soporte"]);
-  saveExerciseDataToDB("rear_delt_cable", marcasPull["Rear Delt polea unilateral"]);
-  saveExerciseDataToDB("row_multipower", marcasPull["Remo en multipower"]);
-  saveExerciseDataToDB("curl_preacher_ez", marcasPull["Curl predicador barra Z"]);
-  saveExerciseDataToDB("curl_bayesian", marcasPull["Curl Bayesian en polea"]);
-
-  loadRoutine('pull');
-  alert("¡Marcas e historial de Pull restaurados con éxito!");
+  // 2. Renderizar interfaz con las marcas de la nube
+  renderRoutineUI(type);
 }
 
-/* RECARGA FORZADA */
 function forzarActualizacion() {
   if ('caches' in window) {
     caches.keys().then(names => {
@@ -431,8 +444,9 @@ function getWorkoutSummary() {
     }
     if (setsData.length > 0) {
       summary += `\n* ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
+      // Guardamos tanto por ID como por nombre para máxima compatibilidad
+      sessionData[ex.id] = exerciseSets;
       sessionData[ex.name] = exerciseSets;
-      saveExerciseDataToDB(ex.id, exerciseSets);
     }
   });
 
@@ -445,16 +459,12 @@ function copyWorkoutToClipboard() {
     alert("Introduce al menos una serie antes de copiar.");
     return;
   }
-  
-  localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
-  localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
+
   clearDraft();
-  
-  // Guardado en la nube con fusión automática
   syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData);
 
   navigator.clipboard.writeText(summary).then(() => {
-    alert("¡Copiado, guardado en historial y sincronizado en Supabase!");
+    alert("¡Copiado y sincronizado en Supabase!");
     document.getElementById('history-content').innerText = summary;
   }).catch(err => {
     alert("Error al copiar: " + err);
@@ -481,7 +491,7 @@ async function submitWorkout() {
     return;
   }
 
-  const previousSession = localStorage.getItem(`LAST_TEXT_${currentRoutine}`) || "Primera sesión registrada con esta app.";
+  const previousSession = document.getElementById('history-content').innerText;
   const btn = document.getElementById('btn-submit');
   const resBox = document.getElementById('response-box');
   btn.innerText = "Analizando...";
@@ -520,17 +530,16 @@ Por favor:
       resBox.style.border = "1px solid #dc2626";
       resBox.innerText = `Error de API (${data.error.code}): ${data.error.message}`;
     } else {
-      localStorage.setItem(`LAST_SESSION_${currentRoutine}`, JSON.stringify(sessionData));
-      localStorage.setItem(`LAST_TEXT_${currentRoutine}`, summary);
       clearDraft();
+      const feedbackText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió respuesta.";
+      
+      // Sincronización completa con el análisis de la IA en la nube
+      syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData, feedbackText);
+
       document.getElementById('history-content').innerText = summary;
-
-      // Guardado en la nube con fusión automática
-      syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData);
-
       resBox.style.background = "#022c22";
       resBox.style.border = "1px solid #059669";
-      resBox.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió respuesta.";
+      resBox.innerText = feedbackText;
     }
     resBox.style.display = 'block';
     resBox.scrollIntoView({ behavior: 'smooth' });
