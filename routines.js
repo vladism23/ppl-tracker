@@ -395,6 +395,22 @@ const routineSlots = {
           warmupHtml: "<p>Pies 15-20 cm adelantados, agarre thumbless; cero compresión cervical ni flexión lumbar.</p>"
         },
         {
+          id: "squat_barbell",
+          name: "Sentadilla libre",
+          targetReps: "6-8",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Barra sobre trapecios; respiración diafragmática, bracing abdominal estricto y control excéntrico.</p>"
+        },
+        {
+          id: "squat_belt",
+          name: "Belt squat",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 150,
+          warmupHtml: "<p>Carga directa a la cadera; 0 compresión espinal y máximo reclutamiento de cuádriceps.</p>"
+        },
+        {
           id: "leg_press_45",
           name: "Prensa 45° pies medios/adelantados",
           targetReps: "10-12",
@@ -409,6 +425,14 @@ const routineSlots = {
           sets: 3,
           rest: 180,
           warmupHtml: "<p>Bajada controlada; empuje uniforme con toda la planta del pie.</p>"
+        },
+        {
+          id: "pendulum_squat",
+          name: "Sentadilla pendular",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Espalda apoyada; flexión profunda de rodilla con tensión constante en cuádriceps sin cizalla lumbar.</p>"
         }
       ]
     },
