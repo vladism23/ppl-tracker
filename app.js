@@ -16,6 +16,16 @@ let hasAlertedOvertime = false;
 // Memoria en RAM alimentada desde Supabase y localStorage
 let cloudHistoryCache = {};
 
+function formatSlotTitle(rawId) {
+  if (!rawId) return '';
+  return rawId
+    .replace(/^(push_|pull_|leg_|rep_|slot_)/gi, '')
+    .replace(/^slot_/gi, '')
+    .replace(/_/g, ' ')
+    .trim()
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function playBeep() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -136,7 +146,6 @@ document.addEventListener("visibilitychange", () => {
 async function fetchLatestWorkoutFromCloud(routine) {
   if (!supabaseClient) return null;
   try {
-    // 1. Intento en tabla workouts
     const { data, error } = await supabaseClient
       .from('workouts')
       .select('date, summary_text, exercises, ai_feedback')
@@ -147,7 +156,6 @@ async function fetchLatestWorkoutFromCloud(routine) {
 
     if (!error && data) return data;
 
-    // 2. Fallback a tabla workout_logs si workouts está vacía
     const { data: logsData, error: logsErr } = await supabaseClient
       .from('workout_logs')
       .select('slot_id, variant_id, set_number, weight, reps, notes, created_at')
@@ -249,10 +257,9 @@ function generateDynamicWarmupHtml(ex, prevSets) {
 }
 
 /* SINCRONIZACIÓN EN SUPABASE */
-async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, aiFeedback = null, slotsData = []) {
+async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, aiFeedback = null, logsPayload = []) {
   if (!supabaseClient) return;
   try {
-    // 1. Guardar en workouts
     const { data: existingRow } = await supabaseClient
       .from('workouts')
       .select('summary_text, exercises, ai_feedback')
@@ -284,9 +291,8 @@ async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, ai
 
     await supabaseClient.from('workouts').upsert(payload, { onConflict: 'routine_type,date' });
 
-    // 2. Guardar fila a fila en workout_logs para tracking individual
-    if (slotsData && slotsData.length > 0) {
-      await supabaseClient.from('workout_logs').insert(slotsData);
+    if (logsPayload && logsPayload.length > 0) {
+      await supabaseClient.from('workout_logs').insert(logsPayload);
     }
 
     console.log("Datos sincronizados en Supabase exitosamente.");
@@ -323,7 +329,7 @@ function onVariantChanged(slotId, newVariantId) {
   renderRoutineUI(currentRoutine);
 }
 
-/* RENDERIZADO VISUAL CON SLOT + EJERCICIO */
+/* RENDERIZADO VISUAL CON LIMPIEZA DE TÍTULO */
 function renderRoutineUI(type) {
   const container = document.getElementById('exercise-list');
   if (!container) return;
@@ -390,15 +396,14 @@ function renderRoutineUI(type) {
         </div>`;
     }
 
-    // Cabecera que combina el Slot y el Ejercicio actual
-    const slotDisplayName = slot.name || slot.title || slot.slotId;
+    const cleanSlotTitle = slot.name || slot.title || formatSlotTitle(slot.slotId);
 
     container.innerHTML += `
       <details class="exercise-card">
         <summary>
           <div class="exercise-title-wrap">
             <span class="exercise-arrow">▶</span>
-            <span class="exercise-title"><strong>${slotDisplayName}:</strong> ${ex.name}</span>
+            <span class="exercise-title"><strong>${cleanSlotTitle}:</strong> ${ex.name}</span>
             <span class="exercise-reps-badge">${ex.targetReps} reps</span>
           </div>
           <span class="rest-badge">${restLabel}</span>
@@ -450,7 +455,7 @@ async function loadRoutine(type) {
         resBox.innerText = `🤖 OBJETIVOS DEL ENTRENADOR (Semana anterior):\n\n${cloudRecord.ai_feedback}`;
         resBox.style.background = "#022c22";
         resBox.style.border = "1px solid #059669";
-        resBox.style.display = 'block';
+        resBox.display = 'block';
       }
 
       renderRoutineUI(type);
@@ -514,7 +519,7 @@ function getWorkoutSummary() {
       }
     }
     if (setsData.length > 0) {
-      const slotTitle = slot.name || slot.slotId;
+      const slotTitle = slot.name || slot.title || formatSlotTitle(slot.slotId);
       summary += `\n* ${slotTitle} — ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
       sessionData[ex.id] = exerciseSets;
       sessionData[ex.name] = exerciseSets;
