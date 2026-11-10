@@ -381,11 +381,20 @@ const routineSlots = {
   ],
 
   legs: [
+    // 1. Sentadilla / Prensa
     {
       slotId: "legs_slot_squat",
       slotName: "Sentadilla / Cuádriceps",
       defaultVariant: "squat_smith",
       variants: [
+        {
+          id: "squat_libre",
+          name: "Sentadilla libre",
+          targetReps: "6-8",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Barra sobre trapecios; respiración diafragmática, bracing abdominal estricto y control excéntrico.</p>"
+        },
         {
           id: "squat_smith",
           name: "Sentadilla en guiada",
@@ -395,28 +404,20 @@ const routineSlots = {
           warmupHtml: "<p>Pies 15-20 cm adelantados, agarre thumbless; cero compresión cervical ni flexión lumbar.</p>"
         },
         {
-          id: "squat_barbell",
-          name: "Sentadilla libre",
-          targetReps: "6-8",
-          sets: 3,
-          rest: 180,
-          warmupHtml: "<p>Barra sobre trapecios; respiración diafragmática, bracing abdominal estricto y control excéntrico.</p>"
-        },
-        {
           id: "squat_belt",
           name: "Belt squat",
           targetReps: "8-10",
           sets: 3,
           rest: 150,
-          warmupHtml: "<p>Carga directa a la cadera; 0 compresión espinal y máximo reclutamiento de cuádriceps.</p>"
+          warmupHtml: "<p>Carga directa a la cadera; cero compresión espinal y máximo reclutamiento de cuádriceps.</p>"
         },
         {
           id: "leg_press_45",
-          name: "Prensa 45° pies medios/adelantados",
+          name: "Prensa",
           targetReps: "10-12",
           sets: 3,
           rest: 180,
-          warmupHtml: "<p>Sacro y espalda baja bien pegados al respaldo durante todo el rango.</p>"
+          warmupHtml: "<p>Sacro y espalda baja bien pegados al respaldo durante todo el recorrido.</p>"
         },
         {
           id: "hack_squat",
@@ -436,47 +437,143 @@ const routineSlots = {
         }
       ]
     },
+
+    // 2. Peso muerto rumano (Bisagra de cadera)
     {
       slotId: "legs_slot_rdl",
-      slotName: "Bisagra de Cadera",
+      slotName: "Peso muerto rumano",
       defaultVariant: "rdl_smith",
       variants: [
+        {
+          id: "rdl_libre",
+          name: "Peso muerto rumano libre",
+          targetReps: "6-8",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Straps obligatorios; rozar los muslos con la barra, descenso controlado hasta elongación isquiosural sin arquear lumbares.</p>"
+        },
+        {
+          id: "rdl_hexagonal",
+          name: "Peso muerto rumano barra hexagonal",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Agarre neutro; centro de masas más equilibrado, reduciendo tensión en la zona baja de la espalda.</p>"
+        },
         {
           id: "rdl_smith",
           name: "Peso muerto rumano en guiada",
           targetReps: "8-10",
           sets: 3,
           rest: 180,
-          warmupHtml: "<p>Straps obligatorios; empujar cadera hacia atrás sin perder neutralidad lumbar.</p>"
+          warmupHtml: "<p>Straps obligatorios; empujar cadera hacia atrás manteniendo columna neutra.</p>"
         },
         {
-          id: "rdl_db_heavy",
+          id: "rdl_mancuernas",
           name: "Peso muerto rumano con mancuernas",
           targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: "<p>Mancuernas pegadas a las piernas; descenso frenado sintiendo la elongación isquiosural.</p>"
+        },
+        {
+          id: "rdl_banco_hiperextension",
+          name: "Banco de hiperextensión 45°",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 120,
+          warmupHtml: "<p>Pies fijados; bisagra estricta de cadera con columna neutra. Parada de 1 s arriba contrayendo glúteos e isquios.</p>"
         }
       ]
     },
+
+    // 3. Gemelos sentado (Sóleo)
     {
-      slotId: "legs_slot_calves",
-      slotName: "Pantorrilla",
-      defaultVariant: "calves_smith",
+      slotId: "legs_slot_calves_seated",
+      slotName: "Gemelos sentado",
+      defaultVariant: "calves_seated_guiada",
       variants: [
         {
-          id: "calves_smith",
-          name: "Gemelos guiada (S1-S2 Estir / S3-S4 Full)",
+          id: "calves_seated_guiada",
+          name: "Sentado en guiada",
+          targetReps: "12-15",
+          sets: 4,
+          rest: 90,
+          warmupHtml: "<p>Rodillas a 90° (aislamiento puro de sóleo). Barra almohadillada sobre rodillas.</p>"
+        },
+        {
+          id: "calves_seated_libre",
+          name: "Sentado con barra libre",
+          targetReps: "12-15",
+          sets: 4,
+          rest: 90,
+          warmupHtml: "<p>Sentado en banco; barra con almohadilla sobre muslos y punteras sobre soporte elevado.</p>"
+        },
+        {
+          id: "calves_seated_discos",
+          name: "Sentado con discos",
+          targetReps: "12-15",
+          sets: 4,
+          rest: 75,
+          warmupHtml: "<p>Discos apoyados sobre rodillas con toalla; cadencia lenta y estiramiento profundo abajo.</p>"
+        }
+      ]
+    },
+
+    // 4. Gemelos de pie (Gastrocnemio)
+    {
+      slotId: "legs_slot_calves_standing",
+      slotName: "Gemelos de pie",
+      defaultVariant: "calves_standing_guiada",
+      variants: [
+        {
+          id: "calves_standing_guiada",
+          name: "De pie en guiada",
           targetReps: "10-12",
           sets: 4,
           rest: 90,
-          warmupHtml: "<p>S1 y S2: Pausa estricta de 2 s en máximo estiramiento (Sóleo). S3 y S4: Rango completo cadenciado.</p>"
+          warmupHtml: "<p>Rodillas casi bloqueadas (Gastrocnemio). Pausa estricta de 2 s abajo en estiramiento máximo.</p>"
+        },
+        {
+          id: "calves_standing_libre",
+          name: "De pie con barra libre",
+          targetReps: "10-12",
+          sets: 4,
+          rest: 90,
+          warmupHtml: "<p>Sobre step o soporte rígido; control total del equilibrio y parada abajo sin rebote.</p>"
+        },
+        {
+          id: "calves_standing_mancuerna",
+          name: "De pie con mancuerna",
+          targetReps: "12-15",
+          sets: 4,
+          rest: 60,
+          warmupHtml: "<p>Unilateral sobre escalón; mano libre apoyada en soporte firme para total estabilidad.</p>"
         }
       ]
     },
+
+    // 5. Extensión de cuádriceps
+    {
+      slotId: "legs_slot_leg_extension",
+      slotName: "Extensión cuádriceps",
+      defaultVariant: "leg_extension_machine",
+      variants: [
+        {
+          id: "leg_extension_machine",
+          name: "Extensión de cuádriceps en máquina",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>1 s de pausa isométrica en extensión completa arriba antes de descender con control en 3 s.</p>"
+        }
+      ]
+    },
+
+    // 6. Curl femoral
     {
       slotId: "legs_slot_hamstring_curl",
-      slotName: "Curl Femoral",
+      slotName: "Curl femoral en máquina",
       defaultVariant: "leg_curl_machine",
       variants: [
         {
@@ -485,28 +582,15 @@ const routineSlots = {
           targetReps: "10-12",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Cadera fija a la colchoneta; contracción potente y 3 s de bajada excéntrica.</p>"
+          warmupHtml: "<p>Cadera bien encajada a la almohadilla; flexión explosiva y 3 s de bajada excéntrica controlada.</p>"
         }
       ]
     },
-    {
-      slotId: "legs_slot_leg_extension",
-      slotName: "Extensión Cuádriceps",
-      defaultVariant: "leg_extension_machine",
-      variants: [
-        {
-          id: "leg_extension_machine",
-          name: "Extensión de cuádriceps",
-          targetReps: "12-15",
-          sets: 3,
-          rest: 90,
-          warmupHtml: "<p>1 s de pausa isométrica en extensión completa arriba antes de descender con control.</p>"
-        }
-      ]
-    },
+
+    // 7. Máquina de aductores
     {
       slotId: "legs_slot_adductor",
-      slotName: "Aductores",
+      slotName: "Máquina de aductores",
       defaultVariant: "adductor_machine",
       variants: [
         {
@@ -515,7 +599,33 @@ const routineSlots = {
           targetReps: "12-15",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Rango amplio y controlado; evitar rebotes en la apertura máxima.</p>"
+          warmupHtml: "<p>Rango amplio y controlado; 1 s de apriete en cierre completo sin rebotar al abrir.</p>"
+        }
+      ]
+    },
+
+    // 8. Opcional: Glúteo
+    {
+      slotId: "legs_slot_hip_thrust_opt",
+      slotName: "Opcional: Hip Thrust",
+      optional: true,
+      defaultVariant: "hip_thrust_maquina",
+      variants: [
+        {
+          id: "hip_thrust_maquina",
+          name: "Hip thrust en máquina",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 150,
+          warmupHtml: "<p>Apoyo escapular firme; bloqueo completo de cadera arriba con retroversión pélvica.</p>"
+        },
+        {
+          id: "hip_thrust_barra",
+          name: "Hip thrust con barra",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Almohadilla en la pelvis; empuje desde los talones y pausa de 1 s en máxima extensión.</p>"
         }
       ]
     }
