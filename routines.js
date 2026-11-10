@@ -632,85 +632,125 @@ const routineSlots = {
   ],
 
   repaso: [
+    // 1. Pullover
     {
       slotId: "rep_slot_pullover",
-      slotName: "Pullover",
-      defaultVariant: "pullover_cable",
+      slotName: "Pullover polea barra recta",
+      defaultVariant: "pullover_cruces",
       variants: [
         {
-          id: "pullover_cable",
-          name: "Pullover polea barra recta",
+          id: "pullover_cruces",
+          name: "Polea cruces",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Codos fijos en microflexión constante (cero flexo-extensión para blindar tendón de tríceps).</p>"
+          warmupHtml: "<p>Codos fijos en microflexión constante (cero flexo-extensión para blindar tendón de tríceps). Ratio 2:1.</p>"
+        },
+        {
+          id: "pullover_simple",
+          name: "Polea simple",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>Polea simple (ratio directo 1:1); mayor resistencia efectiva con la misma fijación de codos.</p>"
         }
       ]
     },
+
+    // 2. Press inclinado 30°
     {
       slotId: "rep_slot_incline_press",
-      slotName: "Press inclinado",
-      defaultVariant: "press_incline_db",
+      slotName: "Press inclinado 30°",
+      defaultVariant: "press_incline_mancuernas",
       variants: [
         {
-          id: "press_incline_db",
-          name: "Press inclinado 30° mancuernas",
+          id: "press_incline_mancuernas",
+          name: "Mancuernas",
           targetReps: "8-10",
           sets: 3,
           rest: 180,
           warmupHtml: "<p>Banco a 30° estricto; agarre semi-neutro a 45° seguro para codo izquierdo.</p>"
         },
         {
-          id: "press_incline_smith",
-          name: "Press inclinado en multipower",
+          id: "press_incline_guiada",
+          name: "Guiada",
           targetReps: "8-10",
           sets: 3,
           rest: 180,
-          warmupHtml: "<p>Banco a 30°; bajada a la clavícula con tempo controlado.</p>"
+          warmupHtml: "<p>Banco a 30°; bajada controlada hacia la clavícula con parada abajo.</p>"
         }
       ]
     },
+
+    // 3. Shrugs (encogimientos)
     {
       slotId: "rep_slot_shrugs",
-      slotName: "Trapecios",
-      defaultVariant: "trapbar_shrugs",
+      slotName: "Shrugs (encogimientos)",
+      defaultVariant: "shrugs_hexagonal",
       variants: [
         {
-          id: "trapbar_shrugs",
-          name: "Trap Bar Shrugs (Barra hexagonal)",
+          id: "shrugs_hexagonal",
+          name: "Barra hexagonal",
           targetReps: "10-12",
           sets: 3,
-          rest: 180,
-          warmupHtml: "<p>Straps puestos; inclinación de torso 20° adelante y parada de 2 s arriba.</p>"
+          rest: 150,
+          warmupHtml: "<p>Straps puestos; inclinación de torso a 15-20° adelante y parada de 2 s arriba.</p>"
         },
         {
-          id: "db_shrugs_seated",
-          name: "Encogimientos con mancuernas sentado",
+          id: "rack_pull_traps",
+          name: "Rack pull",
+          targetReps: "6-8",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Straps obligatorios. Salida justo bajo las rodillas; bloqueo y aguante isométrico de trapecio arriba sin arquear lumbares.</p>"
+        },
+        {
+          id: "shrugs_barra_recta",
+          name: "Barra recta",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 150,
+          warmupHtml: "<p>Straps puestos; elevación vertical estricta sin redondear hombros hacia atrás.</p>"
+        },
+        {
+          id: "shrugs_mancuernas",
+          name: "Mancuernas",
           targetReps: "10-12",
           sets: 3,
           rest: 120,
-          warmupHtml: "<p>Sin sobrecarga lumbar; elevación estricta y parada de 2 s arriba.</p>"
+          warmupHtml: "<p>De pie con leve inclinación o sentado en banco; elevación pura y bajada en 2-3 s controlados.</p>"
         }
       ]
     },
+
+    // 4. Cruces polea alta (pecho inferior)
     {
       slotId: "rep_slot_lower_chest",
-      slotName: "Pecho inferior",
-      defaultVariant: "cable_crossover_high",
+      slotName: "Cruces polea alta (pecho inferior)",
+      defaultVariant: "cruces_polea_alta",
       variants: [
         {
-          id: "cable_crossover_high",
-          name: "Cruces polea alta (Pecho inferior)",
+          id: "cruces_polea_alta",
+          name: "Cruces polea alta",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
           warmupHtml: "<p>Trayectoria hacia el ombligo; contracción de 1 s al cruzar muñecas.</p>"
+        },
+        {
+          id: "fondos_lastrados_pecho",
+          name: "Fondos lastrados (pecho inferior)",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 180,
+          warmupHtml: "<p>Torso inclinado 30-45° hacia adelante, codos abiertos a 45° y bajada frenada hasta 90° de flexión.</p>"
         }
       ]
     }
   ],
 
   dia5: [
+    // 1. Press hombro
     {
       slotId: "d5_slot_shoulder_press",
       slotName: "Press hombro",
@@ -734,6 +774,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 2. Bíceps polea
     {
       slotId: "d5_slot_biceps_cable",
       slotName: "Bíceps polea",
@@ -749,6 +791,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 3. Laterales polea
     {
       slotId: "d5_slot_lat_cable",
       slotName: "Laterales polea",
@@ -764,6 +808,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 4. Tríceps supino
     {
       slotId: "d5_slot_triceps_supine",
       slotName: "Tríceps supino",
@@ -779,6 +825,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 5. Pájaros
     {
       slotId: "d5_slot_rear_db",
       slotName: "Pájaros",
@@ -794,6 +842,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 6. Braquial / Martillo
     {
       slotId: "d5_slot_hammer",
       slotName: "Braquial / Martillo",
@@ -809,6 +859,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 7. Posterior remate
     {
       slotId: "d5_slot_rear_fly",
       slotName: "Posterior remate",
@@ -824,6 +876,8 @@ const routineSlots = {
         }
       ]
     },
+
+    // 8. Tríceps lateral
     {
       slotId: "d5_slot_crossbody_db",
       slotName: "Tríceps lateral",
