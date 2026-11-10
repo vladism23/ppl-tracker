@@ -136,6 +136,7 @@ document.addEventListener("visibilitychange", () => {
 async function fetchLatestWorkoutFromCloud(routine) {
   if (!supabaseClient) return null;
   try {
+    // 1. Intento en tabla workouts
     const { data, error } = await supabaseClient
       .from('workouts')
       .select('date, summary_text, exercises, ai_feedback')
@@ -144,11 +145,36 @@ async function fetchLatestWorkoutFromCloud(routine) {
       .limit(1)
       .maybeSingle();
 
-    if (error) {
-      console.error("Error al consultar Supabase:", error);
-      return null;
+    if (!error && data) return data;
+
+    // 2. Fallback a tabla workout_logs si workouts está vacía
+    const { data: logsData, error: logsErr } = await supabaseClient
+      .from('workout_logs')
+      .select('slot_id, variant_id, set_number, weight, reps, notes, created_at')
+      .eq('routine_name', routine)
+      .order('created_at', { ascending: false });
+
+    if (!logsErr && logsData && logsData.length > 0) {
+      let reconstructedExercises = {};
+      logsData.forEach(row => {
+        if (!reconstructedExercises[row.variant_id]) {
+          reconstructedExercises[row.variant_id] = [];
+        }
+        reconstructedExercises[row.variant_id].push({
+          kg: row.weight,
+          reps: row.reps,
+          rir: ''
+        });
+      });
+      return {
+        date: new Date(logsData[0].created_at).toLocaleDateString(),
+        summary_text: `Último registro cargado desde logs (${logsData.length} series)`,
+        exercises: reconstructedExercises,
+        ai_feedback: null
+      };
     }
-    return data;
+
+    return null;
   } catch (err) {
     console.error("Fallo de conexión:", err);
     return null;
@@ -157,7 +183,6 @@ async function fetchLatestWorkoutFromCloud(routine) {
 
 /* BUSCADOR DE EJERCICIOS EN MEMORIA Y FALLBACK LOCAL */
 function getHistoricalExerciseData(exId, exName) {
-  // 1. En caché descargado de Supabase
   if (cloudHistoryCache[exId] && cloudHistoryCache[exId].length > 0) {
     return cloudHistoryCache[exId];
   }
@@ -166,7 +191,6 @@ function getHistoricalExerciseData(exId, exName) {
     return cloudHistoryCache[foundCloudKey];
   }
 
-  // 2. Fallback a base local en caso de estar offline o primer arranque
   const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
   if (db[exId] && db[exId].length > 0) {
     return db[exId];
@@ -224,10 +248,11 @@ function generateDynamicWarmupHtml(ex, prevSets) {
     ${ex.warmupHtml || ''}`;
 }
 
-/* SINCRONIZACIÓN EN SUPABASE (FUSIÓN AUTOMÁTICA) */
-async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, aiFeedback = null) {
+/* SINCRONIZACIÓN EN SUPABASE */
+async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, aiFeedback = null, slotsData = []) {
   if (!supabaseClient) return;
   try {
+    // 1. Guardar en workouts
     const { data: existingRow } = await supabaseClient
       .from('workouts')
       .select('summary_text, exercises, ai_feedback')
@@ -257,15 +282,14 @@ async function syncWorkoutToCloud(routine, dateStr, summaryText, sessionData, ai
     };
     if (finalFeedback) payload.ai_feedback = finalFeedback;
 
-    const { error: upsertErr } = await supabaseClient
-      .from('workouts')
-      .upsert(payload, { onConflict: 'routine_type,date' });
+    await supabaseClient.from('workouts').upsert(payload, { onConflict: 'routine_type,date' });
 
-    if (upsertErr) {
-      console.error("Error al sincronizar con Supabase:", upsertErr);
-    } else {
-      console.log("Datos sincronizados en la nube (Supabase).");
+    // 2. Guardar fila a fila en workout_logs para tracking individual
+    if (slotsData && slotsData.length > 0) {
+      await supabaseClient.from('workout_logs').insert(slotsData);
     }
+
+    console.log("Datos sincronizados en Supabase exitosamente.");
   } catch (err) {
     console.error("Fallo de red en Supabase:", err);
   }
@@ -299,14 +323,14 @@ function onVariantChanged(slotId, newVariantId) {
   renderRoutineUI(currentRoutine);
 }
 
-/* RENDERIZADO VISUAL */
+/* RENDERIZADO VISUAL CON SLOT + EJERCICIO */
 function renderRoutineUI(type) {
   const container = document.getElementById('exercise-list');
   if (!container) return;
   container.innerHTML = '';
 
   if (typeof routineSlots === 'undefined' || !routineSlots[type]) {
-    container.innerHTML = `<div style="padding: 20px; color: #ef4444;">Error: No se encontró la rutina '${type}' en routines.js. Verifica que routines.js esté cargado.</div>`;
+    container.innerHTML = `<div style="padding: 20px; color: #ef4444;">Error: No se encontró la rutina '${type}' en routines.js.</div>`;
     return;
   }
 
@@ -366,12 +390,15 @@ function renderRoutineUI(type) {
         </div>`;
     }
 
+    // Cabecera que combina el Slot y el Ejercicio actual
+    const slotDisplayName = slot.name || slot.title || slot.slotId;
+
     container.innerHTML += `
       <details class="exercise-card">
         <summary>
           <div class="exercise-title-wrap">
             <span class="exercise-arrow">▶</span>
-            <span class="exercise-title">${ex.name}</span>
+            <span class="exercise-title"><strong>${slotDisplayName}:</strong> ${ex.name}</span>
             <span class="exercise-reps-badge">${ex.targetReps} reps</span>
           </div>
           <span class="rest-badge">${restLabel}</span>
@@ -406,12 +433,10 @@ async function loadRoutine(type) {
   const resBox = document.getElementById('response-box');
   if (resBox) resBox.style.display = 'none';
 
-  // 1. Renderizado INMEDIATO (la pantalla nunca queda vacía)
   renderRoutineUI(type);
 
   if (historyContentEl) historyContentEl.innerText = "Cargando datos previos desde Supabase...";
 
-  // 2. Consulta asíncrona a Supabase en segundo plano
   try {
     const cloudRecord = await fetchLatestWorkoutFromCloud(type);
 
@@ -428,7 +453,6 @@ async function loadRoutine(type) {
         resBox.style.display = 'block';
       }
 
-      // Re-renderizamos para actualizar placeholders con datos frescos de la nube
       renderRoutineUI(type);
     } else {
       cloudHistoryCache = {};
@@ -456,6 +480,7 @@ function getWorkoutSummary() {
   const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
   let summary = `Entrenamiento realizado (${currentRoutine.toUpperCase()}) - ${dateStr}:\n`;
   let sessionData = {};
+  let logsPayload = [];
   let hasData = false;
 
   const slots = routineSlots[currentRoutine];
@@ -476,32 +501,42 @@ function getWorkoutSummary() {
         hasData = true;
         setsData.push(`Serie ${s}: ${kg} kg x ${reps} reps (RIR ${rir !== "" ? rir : "N/A"})`);
         exerciseSets.push({ kg, reps, rir });
+
+        logsPayload.push({
+          routine_name: currentRoutine,
+          slot_id: slot.slotId,
+          variant_id: ex.id,
+          set_number: s,
+          weight: parseFloat(kg),
+          reps: parseInt(reps, 10),
+          notes: rir !== "" ? `RIR ${rir}` : null
+        });
       }
     }
     if (setsData.length > 0) {
-      summary += `\n* ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
+      const slotTitle = slot.name || slot.slotId;
+      summary += `\n* ${slotTitle} — ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
       sessionData[ex.id] = exerciseSets;
       sessionData[ex.name] = exerciseSets;
       
-      // Guardado local de seguridad
       const db = JSON.parse(localStorage.getItem('EXERCISE_HISTORY_DB') || '{}');
       db[ex.id] = exerciseSets;
       localStorage.setItem('EXERCISE_HISTORY_DB', JSON.stringify(db));
     }
   });
 
-  return { summary, sessionData, hasData, dateStr };
+  return { summary, sessionData, logsPayload, hasData, dateStr };
 }
 
 function copyWorkoutToClipboard() {
-  const { summary, sessionData, hasData, dateStr } = getWorkoutSummary();
+  const { summary, sessionData, logsPayload, hasData, dateStr } = getWorkoutSummary();
   if (!hasData) {
     alert("Introduce al menos una serie antes de copiar.");
     return;
   }
 
   clearDraft();
-  syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData);
+  syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData, null, logsPayload);
 
   navigator.clipboard.writeText(summary).then(() => {
     alert("¡Copiado y sincronizado en Supabase!");
@@ -526,7 +561,7 @@ async function submitWorkout() {
     return;
   }
 
-  const { summary, sessionData, hasData, dateStr } = getWorkoutSummary();
+  const { summary, sessionData, logsPayload, hasData, dateStr } = getWorkoutSummary();
   if (!hasData) {
     alert("Introduce al menos una serie con peso y repeticiones.");
     return;
@@ -577,7 +612,7 @@ Por favor:
       clearDraft();
       const feedbackText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No se recibió respuesta.";
       
-      syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData, feedbackText);
+      syncWorkoutToCloud(currentRoutine, dateStr, summary, sessionData, feedbackText, logsPayload);
 
       if (historyContent) historyContent.innerText = summary;
       if (resBox) {
