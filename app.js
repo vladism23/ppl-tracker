@@ -594,7 +594,7 @@ Por favor:
 2. Evalúa series con fallo técnico, descansos o fatiga articular (codo izquierdo y lumbar).
 3. Establece las cargas diana y repeticiones para la siguiente sesión de forma concisa usando una tabla Markdown clara con columnas: Ejercicio, Series, Carga Diana, Reps Objetivo, Descanso, Clave de Ejecución y RIR.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
