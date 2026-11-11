@@ -142,28 +142,54 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) checkActiveTimerOnLoad();
 });
 
-/* OBTENER HISTÓRICO DIRECTAMENTE DE SUPABASE */
+/* OBTENER HISTÓRICO DIRECTAMENTE DE SUPABASE (EXCLUYENDO LA SESIÓN DE HOY) */
 async function fetchLatestWorkoutFromCloud(routine) {
   if (!supabaseClient) return null;
   try {
+    const now = new Date();
+    const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+    // 1. Intento en tabla workouts excluyendo fecha actual
     const { data, error } = await supabaseClient
       .from('workouts')
       .select('date, summary_text, exercises, ai_feedback')
       .eq('routine_type', routine)
+      .neq('date', dateStr)
       .order('date', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (!error && data) return data;
 
+    // 2. Intento en tabla workout_logs excluyendo series registradas hoy
+    const { data: latestPrevLog, error: latestErr } = await supabaseClient
+      .from('workout_logs')
+      .select('created_at')
+      .eq('routine_name', routine)
+      .lt('created_at', startOfToday)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (latestErr || !latestPrevLog) return null;
+
+    const targetDate = new Date(latestPrevLog.created_at);
+    const dayStart = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).toISOString();
+    const dayEnd = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999).toISOString();
+
     const { data: logsData, error: logsErr } = await supabaseClient
       .from('workout_logs')
       .select('slot_id, variant_id, set_number, weight, reps, notes, created_at')
       .eq('routine_name', routine)
-      .order('created_at', { ascending: false });
+      .gte('created_at', dayStart)
+      .lte('created_at', dayEnd)
+      .order('set_number', { ascending: true });
 
     if (!logsErr && logsData && logsData.length > 0) {
       let reconstructedExercises = {};
+      let summaryLines = [];
+
       logsData.forEach(row => {
         if (!reconstructedExercises[row.variant_id]) {
           reconstructedExercises[row.variant_id] = [];
@@ -171,12 +197,16 @@ async function fetchLatestWorkoutFromCloud(routine) {
         reconstructedExercises[row.variant_id].push({
           kg: row.weight,
           reps: row.reps,
-          rir: ''
+          rir: row.notes ? row.notes.replace('RIR ', '') : ''
         });
+
+        const noteText = row.notes ? ` (${row.notes})` : '';
+        summaryLines.push(`• ${row.variant_id}: S${row.set_number} -> ${row.weight} kg x ${row.reps} reps${noteText}`);
       });
+
       return {
-        date: new Date(logsData[0].created_at).toLocaleDateString(),
-        summary_text: `Último registro cargado desde logs (${logsData.length} series)`,
+        date: targetDate.toLocaleDateString(),
+        summary_text: `Sesión anterior (${targetDate.toLocaleDateString()}):\n` + summaryLines.join('\n'),
         exercises: reconstructedExercises,
         ai_feedback: null
       };
@@ -184,7 +214,7 @@ async function fetchLatestWorkoutFromCloud(routine) {
 
     return null;
   } catch (err) {
-    console.error("Fallo de conexión:", err);
+    console.error("Fallo de conexión al cargar histórico:", err);
     return null;
   }
 }
@@ -455,7 +485,7 @@ async function loadRoutine(type) {
         resBox.innerText = `🤖 OBJETIVOS DEL ENTRENADOR (Semana anterior):\n\n${cloudRecord.ai_feedback}`;
         resBox.style.background = "#022c22";
         resBox.style.border = "1px solid #059669";
-        resBox.display = 'block';
+        resBox.style.display = 'block';
       }
 
       renderRoutineUI(type);
