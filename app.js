@@ -241,7 +241,7 @@ function getHistoricalExerciseData(exId, exName) {
   return null;
 }
 
-/* CÁLCULO DINÁMICO DE APROXIMACIONES Y CARGA DIANA */
+/* CÁLCULO DINÁMICO DE APROXIMACIONES Y CARGA DIANA (INCREMENTOS REALES) */
 function generateDynamicWarmupHtml(ex, prevSets) {
   let lastMaxKg = null;
   if (prevSets && prevSets.length > 0) {
@@ -257,24 +257,26 @@ function generateDynamicWarmupHtml(ex, prevSets) {
       ${ex.warmupHtml || ''}`;
   }
 
-  const isBarbell = ex.id.includes("libre") || ex.id.includes("guiada") || ex.id.includes("barra");
   const isDumbbell = ex.id.includes("mancuerna") || ex.id.includes("db");
+  const isCable = ex.id.includes("polea") || ex.id.includes("cable") || ex.id.includes("cruce");
 
-  const roundWeight = (kg) => {
-    if (isDumbbell) return Math.round(kg / 2) * 2;
-    if (isBarbell) return Math.round(kg / 2.5) * 2.5;
-    return Math.round(kg / 2.5) * 2.5;
-  };
+  // Salto mínimo real según equipamiento
+  const minStep = isDumbbell ? 2 : (isCable ? 1.25 : 2.5);
 
-  const w50 = roundWeight(lastMaxKg * 0.50);
-  const w70 = roundWeight(lastMaxKg * 0.70);
-  const w85 = roundWeight(lastMaxKg * 0.85);
-  const targetNext = roundWeight(lastMaxKg * 1.025);
+  const roundWeight = (kg, step) => Math.round(kg / step) * step;
+
+  // Aproximaciones
+  const w50 = roundWeight(lastMaxKg * 0.50, minStep);
+  const w70 = roundWeight(lastMaxKg * 0.70, minStep);
+  const w85 = roundWeight(lastMaxKg * 0.85, minStep);
+
+  // La Carga Diana asegura el salto mínimo físico disponible
+  const targetNext = parseFloat((lastMaxKg + minStep).toFixed(2));
 
   return `
     <div style="background: rgba(15, 23, 42, 0.6); padding: 8px 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #334155; font-size: 0.88em; line-height: 1.45;">
       <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;">
-        🎯 Carga Diana (Base anterior: ${lastMaxKg} kg): ${lastMaxKg === targetNext ? `${lastMaxKg} kg` : `${lastMaxKg} - ${targetNext} kg`}
+        🎯 Carga Diana (Base anterior: ${lastMaxKg} kg): ${lastMaxKg} kg → ${targetNext} kg
       </div>
       <div style="color: #cbd5e1;">
         <span style="color: #94a3b8; font-weight: 600;">Aproximaciones:</span><br>
