@@ -758,11 +758,11 @@ const routineSlots = {
       variants: [
         {
           id: "press_militar_poleas",
-          name: "Press militar en poleas",
+          name: "Press militar en polea",
           targetReps: "10-12",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Mismo ID que en Push. Sin bloquear codos arriba para evitar cizalla.</p>"
+          warmupHtml: "<p>Mismo ID que en Push. Sin bloquear codos arriba para evitar cizalla; cuello neutro.</p>"
         },
         {
           id: "press_militar_guiada",
@@ -771,65 +771,105 @@ const routineSlots = {
           sets: 3,
           rest: 150,
           warmupHtml: "<p>Mismo ID que en Push. Recupera tus cargas de la multipower automáticamente.</p>"
+        },
+        {
+          id: "press_militar_mancuernas",
+          name: "Press militar mancuerna",
+          targetReps: "8-10",
+          sets: 3,
+          rest: 150,
+          warmupHtml: "<p>Mismo ID que en Push. Trayectoria en plano escapular sin chocar arriba.</p>"
         }
       ]
     },
 
-    // 2. Bíceps polea
+    // 2. Bíceps con cable
     {
       slotId: "d5_slot_biceps_cable",
-      slotName: "Bíceps polea",
+      slotName: "Bíceps con cable",
       defaultVariant: "d5_curl_low_cable",
       variants: [
         {
           id: "d5_curl_low_cable",
-          name: "Curl en polea baja barra recta",
+          name: "Curl en polea baja barra recta polea cruces",
           targetReps: "10-12",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Flexión estricta sin balanceo lumbar; codos pegados a los costados.</p>"
+          warmupHtml: "<p>Flexión estricta sin balanceo lumbar ni adelantamiento cervical; codos pegados a los costados.</p>"
+        },
+        {
+          id: "d5_curl_low_cable_simple",
+          name: "Curl en polea baja barra recta polea simple",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>Polea simple (ratio directo 1:1); tensión constante desde el estiramiento.</p>"
         }
       ]
     },
 
-    // 3. Laterales polea
+    // 3. Elevaciones laterales 1 mano polea altura cadera
     {
       slotId: "d5_slot_lat_cable",
-      slotName: "Laterales polea",
+      slotName: "Elevaciones laterales 1 mano polea altura cadera",
       defaultVariant: "laterales_polea_cruces",
       variants: [
         {
           id: "laterales_polea_cruces",
-          name: "Elevaciones laterales en polea cruces",
+          name: "Elevaciones laterales 1 mano polea cruces",
           targetReps: "12-15",
           sets: 3,
           rest: 60,
-          warmupHtml: "<p>Mismo ID que en Push. Recupera tus marcas registradas en la polea de cruces.</p>"
+          warmupHtml: "<p>Mismo ID que en Push. Polea a altura de cadera; depresión escapular estricta sin encoger cuello.</p>"
+        },
+        {
+          id: "laterales_polea_simple",
+          name: "Elevaciones laterales 1 mano polea simple",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 60,
+          warmupHtml: "<p>Polea simple (mayor resistencia directa); guiar con el codo en plano escapular.</p>"
+        },
+        {
+          id: "laterales_mancuernas_pie",
+          name: "Elevaciones laterales mancuernas",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 60,
+          warmupHtml: "<p>Mismo ID que en Push. Codos ligeramente flexionados sin elevar trapecio superior.</p>"
         }
       ]
     },
 
-    // 4. Tríceps supino
+    // 4. Extensiones tríceps en polea agarre supino
     {
       slotId: "d5_slot_triceps_supine",
-      slotName: "Tríceps supino",
+      slotName: "Extensiones tríceps en polea agarre supino",
       defaultVariant: "d5_triceps_supine",
       variants: [
         {
           id: "d5_triceps_supine",
-          name: "Extensiones tríceps en polea agarre supino",
+          name: "Con muñequera en polea cruces",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Enfoque en cabeza medial; codos fijados y extensión controlada sin tirones.</p>"
+          warmupHtml: "<p>Cuidado codo izquierdo: controlar flexión máxima sin rebotes; codos fijados al costado.</p>"
+        },
+        {
+          id: "d5_triceps_supine_simple",
+          name: "Con muñequera en polea simple",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>Polea simple directa; extensión estricta focalizando cabeza medial.</p>"
         }
       ]
     },
 
-    // 5. Pájaros
+    // 5. Pájaros posterior
     {
       slotId: "d5_slot_rear_db",
-      slotName: "Pájaros",
+      slotName: "Pájaros posterior",
       defaultVariant: "d5_rear_db",
       variants: [
         {
@@ -838,15 +878,15 @@ const routineSlots = {
           targetReps: "12-15",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Pecho apoyado a 30-40°; apertura en plano escapular sin encoger trapecios.</p>"
+          warmupHtml: "<p>Pecho apoyado a 30-40°; cabeza neutra alineada y apertura en plano escapular sin encoger trapecios.</p>"
         }
       ]
     },
 
-    // 6. Braquial / Martillo
+    // 6. Curl martillo
     {
       slotId: "d5_slot_hammer",
-      slotName: "Braquial / Martillo",
+      slotName: "Curl martillo",
       defaultVariant: "d5_hammer_ez",
       variants: [
         {
@@ -855,41 +895,81 @@ const routineSlots = {
           targetReps: "10-12",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Énfasis en braquiorradial y braquial; bajada lenta en 2-3 s.</p>"
+          warmupHtml: "<p>Agarre neutro en barra Z/romana; énfasis en braquiorradial y braquial, bajada en 2-3 s.</p>"
+        },
+        {
+          id: "d5_hammer_db_standing",
+          name: "Curl martillo con mancuernas de pie",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>Alterno o simultáneo sin impulso lumbar ni proyección cervical.</p>"
+        },
+        {
+          id: "d5_hammer_db_seated",
+          name: "Curl martillo con mancuernas sentado",
+          targetReps: "10-12",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>Espalda apoyada en banco vertical para aislamiento estricto del codo.</p>"
         }
       ]
     },
 
-    // 7. Posterior remate
+    // 7. Rear fly
     {
       slotId: "d5_slot_rear_fly",
-      slotName: "Posterior remate",
+      slotName: "Rear fly",
       defaultVariant: "rear_delt_cable",
       variants: [
         {
           id: "rear_delt_cable",
-          name: "Rear Delt polea unilateral",
+          name: "Rear delt 1 mano en polea unilateral",
           targetReps: "12-15",
           sets: 3,
           rest: 75,
-          warmupHtml: "<p>Mismo ID que en Pull. Mantiene las marcas de posterior en polea.</p>"
+          warmupHtml: "<p>Mismo ID que en Pull. Iniciar con brazo izquierdo; hombro abajo lejos de la oreja.</p>"
+        },
+        {
+          id: "d5_rear_delt_1m_cruces",
+          name: "Rear delt 1 mano en polea cruces",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 75,
+          warmupHtml: "<p>Polea a la altura del hombro; traccionar en diagonal sin juntar escápulas en exceso.</p>"
+        },
+        {
+          id: "d5_rear_delt_2m_cruces",
+          name: "Rear delt 2 manos en polea cruces",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 75,
+          warmupHtml: "<p>Cruce alto sin mosquetones; cuello relajado y mirada al frente.</p>"
         }
       ]
     },
 
-    // 8. Tríceps lateral
+    // 8. Extensiones tríceps cross-body
     {
       slotId: "d5_slot_crossbody_db",
-      slotName: "Tríceps lateral",
-      defaultVariant: "d5_crossbody_db",
+      slotName: "Extensiones tríceps cross-body",
+      defaultVariant: "d5_crossbody_simple",
       variants: [
         {
-          id: "d5_crossbody_db",
-          name: "Extensiones tríceps cross-body con mancuerna",
+          id: "d5_crossbody_simple",
+          name: "Extensiones tríceps cross-body 1 mano polea simple",
           targetReps: "12-15",
           sets: 3,
           rest: 90,
-          warmupHtml: "<p>Banco plano; bajar mancuerna hacia hombro opuesto. Cuidar inserción del codo izquierdo.</p>"
+          warmupHtml: "<p>Cuidado codo izquierdo: alinear trayectoria de polea con ángulo del húmero para cero torque lateral.</p>"
+        },
+        {
+          id: "d5_crossbody_cruces",
+          name: "Extensiones tríceps cross-body 1 mano polea cruces",
+          targetReps: "12-15",
+          sets: 3,
+          rest: 90,
+          warmupHtml: "<p>Extensión cruzada controlada; pausa de 1 s en máxima contracción.</p>"
         }
       ]
     }
