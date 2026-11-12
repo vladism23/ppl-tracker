@@ -19,7 +19,7 @@ let cloudHistoryCache = {};
 function formatSlotTitle(rawId) {
   if (!rawId) return '';
   return rawId
-    .replace(/^(push_|pull_|leg_|rep_|slot_)/gi, '')
+    .replace(/^(push_|pull_|leg_|rep_|d5_|slot_)/gi, '')
     .replace(/^slot_/gi, '')
     .replace(/_/g, ' ')
     .trim()
@@ -368,7 +368,7 @@ function renderRoutineUI(type) {
   container.innerHTML = '';
 
   if (typeof routineSlots === 'undefined' || !routineSlots[type]) {
-    container.innerHTML = `<div style="padding: 20px; color: #ef4444;">Error: No se encontró la rutina '${type}' en routines.js.</div>`;
+    container.innerHTML = `<div style="padding: 20px; color: #ef4444;">Error: No se encontró la rutina '${type}' en routine.js.</div>`;
     return;
   }
 
@@ -428,7 +428,7 @@ function renderRoutineUI(type) {
         </div>`;
     }
 
-    const cleanSlotTitle = slot.name || slot.title || formatSlotTitle(slot.slotId);
+    const cleanSlotTitle = slot.slotName || slot.name || slot.title || formatSlotTitle(slot.slotId);
 
     container.innerHTML += `
       <details class="exercise-card">
@@ -551,7 +551,7 @@ function getWorkoutSummary() {
       }
     }
     if (setsData.length > 0) {
-      const slotTitle = slot.name || slot.title || formatSlotTitle(slot.slotId);
+      const slotTitle = slot.slotName || slot.name || slot.title || formatSlotTitle(slot.slotId);
       summary += `\n* ${slotTitle} — ${ex.name} [Diana: ${ex.targetReps} reps]:\n  - ${setsData.join('\n  - ')}\n`;
       sessionData[ex.id] = exerciseSets;
       sessionData[ex.name] = exerciseSets;
