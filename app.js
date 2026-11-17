@@ -142,77 +142,75 @@ document.addEventListener("visibilitychange", () => {
   if (!document.hidden) checkActiveTimerOnLoad();
 });
 
-/* OBTENER HISTÓRICO DIRECTAMENTE DE SUPABASE (EXCLUYENDO LA SESIÓN DE HOY) */
+/* OBTENER HISTÓRICO INDEPENDIZADO POR EJERCICIO DESDE SUPABASE */
 async function fetchLatestWorkoutFromCloud(routine) {
   if (!supabaseClient) return null;
   try {
     const now = new Date();
-    const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
 
-    // 1. Intento en tabla workouts excluyendo fecha actual
-    const { data, error } = await supabaseClient
-      .from('workouts')
-      .select('date, summary_text, exercises, ai_feedback')
-      .eq('routine_type', routine)
-      .neq('date', dateStr)
-      .order('date', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!error && data) return data;
-
-    // 2. Intento en tabla workout_logs excluyendo series registradas hoy
-    const { data: latestPrevLog, error: latestErr } = await supabaseClient
-      .from('workout_logs')
-      .select('created_at')
-      .eq('routine_name', routine)
-      .lt('created_at', startOfToday)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (latestErr || !latestPrevLog) return null;
-
-    const targetDate = new Date(latestPrevLog.created_at);
-    const dayStart = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate()).toISOString();
-    const dayEnd = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999).toISOString();
-
+    // 1. Consultar todos los logs previos a hoy de esta rutina ordenados por fecha descendente
     const { data: logsData, error: logsErr } = await supabaseClient
       .from('workout_logs')
       .select('slot_id, variant_id, set_number, weight, reps, notes, created_at')
       .eq('routine_name', routine)
-      .gte('created_at', dayStart)
-      .lte('created_at', dayEnd)
-      .order('set_number', { ascending: true });
+      .lt('created_at', startOfToday)
+      .order('created_at', { ascending: false });
 
-    if (!logsErr && logsData && logsData.length > 0) {
-      let reconstructedExercises = {};
-      let summaryLines = [];
+    if (logsErr || !logsData || logsData.length === 0) {
+      // Fallback a la tabla workouts si no hay logs individuales
+      const { data: workoutData } = await supabaseClient
+        .from('workouts')
+        .select('date, summary_text, exercises, ai_feedback')
+        .eq('routine_type', routine)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return workoutData || null;
+    }
 
-      logsData.forEach(row => {
-        if (!reconstructedExercises[row.variant_id]) {
-          reconstructedExercises[row.variant_id] = [];
-        }
-        reconstructedExercises[row.variant_id].push({
-          kg: row.weight,
-          reps: row.reps,
-          rir: row.notes ? row.notes.replace('RIR ', '') : ''
-        });
+    // 2. Agrupar por variant_id para extraer la sesión más reciente de CADA ejercicio de forma independiente
+    let variantLatestDate = {};
+    logsData.forEach(row => {
+      const dayKey = row.created_at ? row.created_at.split('T')[0] : '';
+      if (!variantLatestDate[row.variant_id]) {
+        variantLatestDate[row.variant_id] = dayKey;
+      }
+    });
 
+    let reconstructedExercises = {};
+    let summaryLines = [];
+    let latestOverallDate = null;
+
+    Object.keys(variantLatestDate).forEach(variantId => {
+      const targetDay = variantLatestDate[variantId];
+      if (!latestOverallDate) latestOverallDate = targetDay;
+
+      const variantLogs = logsData.filter(row => 
+        row.variant_id === variantId && row.created_at && row.created_at.startsWith(targetDay)
+      ).sort((a, b) => a.set_number - b.set_number);
+
+      reconstructedExercises[variantId] = variantLogs.map(row => ({
+        kg: row.weight,
+        reps: row.reps,
+        rir: row.notes ? row.notes.replace('RIR ', '') : ''
+      }));
+
+      variantLogs.forEach(row => {
         const noteText = row.notes ? ` (${row.notes})` : '';
         summaryLines.push(`• ${row.variant_id}: S${row.set_number} -> ${row.weight} kg x ${row.reps} reps${noteText}`);
       });
+    });
 
-      return {
-        date: targetDate.toLocaleDateString(),
-        summary_text: `Sesión anterior (${targetDate.toLocaleDateString()}):\n` + summaryLines.join('\n'),
-        exercises: reconstructedExercises,
-        ai_feedback: null
-      };
-    }
+    const displayDate = latestOverallDate ? new Date(latestOverallDate).toLocaleDateString() : 'Anterior';
 
-    return null;
+    return {
+      date: displayDate,
+      summary_text: `Último histórico por ejercicio (${displayDate}):\n` + summaryLines.join('\n'),
+      exercises: reconstructedExercises,
+      ai_feedback: null
+    };
+
   } catch (err) {
     console.error("Fallo de conexión al cargar histórico:", err);
     return null;
@@ -626,7 +624,7 @@ Por favor:
 2. Evalúa series con fallo técnico, descansos o fatiga articular (codo izquierdo y lumbar).
 3. Establece las cargas diana y repeticiones para la siguiente sesión de forma concisa usando una tabla Markdown clara con columnas: Ejercicio, Series, Carga Diana, Reps Objetivo, Descanso, Clave de Ejecución y RIR.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
